@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#f0fdf4"/>
+  <circle cx="150" cy="150" r="40" fill="#16a34a" opacity="0.6"/>
+  <circle cx="280" cy="120" r="55" fill="#16a34a" opacity="0.5"/>
+  <circle cx="400" cy="160" r="35" fill="#16a34a" opacity="0.7"/>
+  <circle cx="500" cy="130" r="45" fill="#16a34a" opacity="0.4"/>
+  <circle cx="200" cy="200" r="30" fill="#15803d" opacity="0.5"/>
+  <circle cx="350" cy="200" r="25" fill="#15803d" opacity="0.6"/>
+  <text x="300" y="300" text-anchor="middle" fill="#14532d" font-family="system-ui" font-size="16" font-weight="600">EDA Inmobiliario · Visualización</text>
+</svg>

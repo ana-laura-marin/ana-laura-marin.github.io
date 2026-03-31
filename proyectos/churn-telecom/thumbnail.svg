@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#eff6ff"/>
+  <rect x="50" y="100" width="60" height="160" fill="#2563eb" opacity="0.8" rx="4"/>
+  <rect x="140" y="60" width="60" height="200" fill="#2563eb" opacity="0.6" rx="4"/>
+  <rect x="230" y="130" width="60" height="130" fill="#2563eb" opacity="0.4" rx="4"/>
+  <rect x="320" y="80" width="60" height="180" fill="#2563eb" opacity="0.7" rx="4"/>
+  <rect x="410" y="150" width="60" height="110" fill="#2563eb" opacity="0.5" rx="4"/>
+  <line x1="30" y1="260" x2="570" y2="260" stroke="#94a3b8" stroke-width="2"/>
+  <text x="300" y="310" text-anchor="middle" fill="#1e40af" font-family="system-ui" font-size="16" font-weight="600">Predicción de Churn · Machine Learning</text>
+</svg>

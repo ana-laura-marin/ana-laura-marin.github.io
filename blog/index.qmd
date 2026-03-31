@@ -1,0 +1,11 @@
+---
+title: "Blog"
+listing:
+  contents: "*/index.*"
+  type: default
+  sort: "date desc"
+  categories: true
+  fields: [title, description, date, categories, reading-time]
+  feed: true
+toc: false
+---

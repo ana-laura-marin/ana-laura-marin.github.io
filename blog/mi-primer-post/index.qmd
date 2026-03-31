@@ -1,0 +1,51 @@
+---
+title: "Cómo elegir el modelo correcto para tu problema de clasificación"
+description: "Guía práctica para seleccionar entre regresión logística, árboles de decisión y modelos de ensamble según las características de tus datos."
+author: "Tu Nombre"
+date: "2025-12-01"
+categories: [Machine Learning, Guías]
+---
+
+Uno de los errores más comunes al empezar en machine learning es ir directamente al modelo más complejo disponible: redes neuronales, gradient boosting o transformers, sin antes explorar si un modelo más simple podría resolver el problema igual de bien.
+
+## El principio de la navaja de Occam aplicado al ML
+
+En términos prácticos: empieza simple. Un modelo simple que funciona bien en producción es mejor que uno complejo que tarda días en entrenar y es difícil de interpretar.
+
+```python
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
+
+modelos = {
+    'Regresión Logística': LogisticRegression(max_iter=1000),
+    'Árbol de Decisión': DecisionTreeClassifier(max_depth=5),
+    'Random Forest': RandomForestClassifier(n_estimators=100, n_jobs=-1),
+}
+
+for nombre, modelo in modelos.items():
+    scores = cross_val_score(modelo, X, y, cv=5, scoring='roc_auc')
+    print(f"{nombre}: {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+## Cuándo usar cada modelo
+
+**Regresión Logística** — Tu primer intento. Interpretable, rápida, buena en problemas linealmente separables. Si alcanza el objetivo de negocio, úsala.
+
+**Árboles de decisión** — Cuando necesitas interpretabilidad (puedes explicar cada decisión) y tienes interacciones no lineales simples.
+
+**Random Forest** — Cuando la accuracy importa más que la interpretabilidad. Robusto a outliers y no requiere escalado.
+
+**Gradient Boosting** (XGBoost, LightGBM) — Para maximizar performance en datos tabulares. Requiere más tuning pero generalmente supera a Random Forest.
+
+## El criterio de decisión
+
+Antes de elegir el modelo, hazte estas preguntas:
+
+1. ¿Necesitas explicar las predicciones a un no-técnico? → Regresión logística o árbol de decisión.
+2. ¿El problema tiene una clara separación lineal? → Regresión logística.
+3. ¿Tienes muchas variables categóricas? → Gradient Boosting.
+4. ¿El dataset es pequeño (< 10,000 filas)? → Evita redes neuronales.
+
+La clave es el **benchmark progresivo**: empieza con el modelo más simple, establece un baseline, y solo aumenta la complejidad si el beneficio en métricas justifica el costo en interpretabilidad y mantenimiento.

@@ -1,0 +1,79 @@
+/*-- scss:defaults --*/
+
+// Tipografía
+$font-family-sans-serif: "Inter", system-ui, -apple-system, sans-serif;
+$font-family-monospace: "JetBrains Mono", "Fira Code", monospace;
+
+// Colores
+$body-bg: #fafafa;
+$body-color: #1a1a1a;
+$link-color: #2563eb;
+$primary: #2563eb;
+
+// Navbar
+$navbar-bg: #ffffff;
+$navbar-fg: #1a1a1a;
+
+/*-- scss:rules --*/
+
+// Importar fuente Inter desde Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+// Contenedor principal
+.content {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+// Tarjetas de listing
+.quarto-listing-default .listing-item,
+.quarto-grid-item {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+// Tags de categoría
+.listing-category .listing-category-item {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+// About page
+.about-entity img.rounded-circle {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+
+// Celdas de código en notebooks: estilo limpio
+.cell-code {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+// Output de notebooks
+.cell-output {
+  margin-bottom: 1.5rem;
+}
+
+// Footer discreto
+.nav-footer {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+// Print
+@media print {
+  .navbar, .nav-footer, .quarto-search {
+    display: none !important;
+  }
+}

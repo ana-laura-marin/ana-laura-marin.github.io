@@ -1,0 +1,51 @@
+---
+title: "Tu Nombre"
+subtitle: "Científico de Datos"
+about:
+  id: hero
+  template: trestles
+  image: assets/img/perfil.jpg
+  image-alt: "Foto de Tu Nombre"
+  image-shape: round
+  links:
+    - icon: github
+      text: GitHub
+      href: https://github.com/tu-usuario
+    - icon: linkedin
+      text: LinkedIn
+      href: https://linkedin.com/in/tu-usuario
+    - icon: envelope
+      text: Correo
+      href: "mailto:tu@correo.com"
+listing:
+  - id: proyectos-destacados
+    contents: proyectos/*/index.ipynb
+    type: grid
+    grid-columns: 2
+    sort: "date desc"
+    max-items: 4
+    fields: [image, title, description, categories]
+    filter-ui: false
+    sort-ui: false
+    include:
+      destacado: "true"
+    field-display-names:
+      description: " "
+page-layout: full
+toc: false
+---
+
+:::{#hero}
+
+Hola, soy **Tu Nombre**. Me especializo en análisis de datos y machine learning. Actualmente trabajo en [empresa/universidad] en [ciudad, país].
+
+Aquí comparto proyectos que muestran cómo resuelvo problemas reales con datos.
+
+:::
+
+## Proyectos destacados
+
+:::{#proyectos-destacados}
+:::
+
+[Ver todos los proyectos →](proyectos/index.qmd){.btn .btn-outline-primary}

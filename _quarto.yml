@@ -1,0 +1,52 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Tu Nombre"
+  description: "Portafolio de ciencia de datos"
+  site-url: "https://tu-usuario.github.io"
+  favicon: assets/favicon.svg
+  open-graph: true
+  twitter-card: true
+
+  navbar:
+    background: light
+    foreground: dark
+    title: "Tu Nombre"
+    left:
+      - text: Proyectos
+        href: proyectos/index.qmd
+      - text: Blog
+        href: blog/index.qmd
+      - text: Sobre mí
+        href: sobre-mi.qmd
+    right:
+      - icon: github
+        href: https://github.com/tu-usuario
+        aria-label: GitHub
+      - icon: linkedin
+        href: https://linkedin.com/in/tu-usuario
+        aria-label: LinkedIn
+
+  page-footer:
+    left: "© 2025 Tu Nombre"
+    right: "Hecho con [Quarto](https://quarto.org) y Jupyter"
+
+  search:
+    location: navbar
+    type: overlay
+
+format:
+  html:
+    theme:
+      light: [cosmo, styles/custom.scss]
+      dark: [darkly, styles/custom.scss]
+    toc: false
+    code-tools: false
+    smooth-scroll: true
+    link-external-newwindow: true
+    lang: es
+
+execute:
+  freeze: auto

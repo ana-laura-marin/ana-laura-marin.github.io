@@ -1,0 +1,17 @@
+# Configuración compartida para notebooks de proyectos
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-title: "Contenido"
+    code-fold: true
+    code-summary: "Ver código"
+    code-tools:
+      source: true
+      toggle: true
+    code-line-numbers: true
+    number-sections: false
+
+# No re-ejecutar notebooks en render global
+execute:
+  freeze: auto

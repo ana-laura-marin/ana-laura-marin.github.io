@@ -1,0 +1,22 @@
+---
+title: "Proyectos"
+listing:
+  id: todos-los-proyectos
+  contents: "*/index.ipynb"
+  type: grid
+  grid-columns: 2
+  sort: "date desc"
+  categories: true
+  fields: [image, title, description, categories, date]
+  filter-ui: true
+  sort-ui: true
+  field-display-names:
+    description: " "
+    date: "Fecha"
+toc: false
+---
+
+Cada proyecto incluye el notebook completo con código, visualizaciones y análisis. Puedes filtrar por categoría o buscar por tema.
+
+:::{#todos-los-proyectos}
+:::

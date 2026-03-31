@@ -1,0 +1,49 @@
+---
+title: "Sobre mí"
+about:
+  template: solana
+  image: assets/img/perfil.jpg
+  image-alt: "Foto de Tu Nombre"
+  image-shape: round
+  links:
+    - icon: github
+      text: GitHub
+      href: https://github.com/juanperez
+    - icon: linkedin
+      text: LinkedIn
+      href: https://linkedin.com/in/juanperez
+    - icon: file-earmark-pdf
+      text: CV
+      href: assets/pdf/cv.pdf
+---
+
+Hola soy Alejandra Lopez. 
+
+Soy científico de datos con experiencia en la ciencia de datos. Me formé en STATO PRO y me apasiona resolver problemas complejos utilizando datos. He trabajado con proyectos que van desde análisis exploratorio hasta modelos en producción.
+
+Me interesa especialmente [tema 1], [tema 2] y [tema 3]. Cuando no estoy analizando datos, [hobby/actividad].
+
+Estoy abierto/a a colaboraciones, preguntas sobre mis proyectos o simplemente conectar con personas del área.
+
+## Experiencia técnica
+
+**Machine Learning y Estadística**
+scikit-learn, XGBoost, LightGBM, statsmodels, SciPy
+
+**Análisis y Manipulación de Datos**
+pandas, NumPy, SQL, dplyr
+
+**Visualización**
+matplotlib, seaborn, Plotly, ggplot2
+
+**Herramientas y Plataformas**
+Python, R, Jupyter, Quarto, Git, Docker
+
+**Cloud y Bases de Datos**
+PostgreSQL, MySQL, BigQuery, AWS S3
+
+## Formación
+
+**[Título]** · [Institución] · [Año]
+
+**[Certificación o curso relevante]** · [Plataforma] · [Año]

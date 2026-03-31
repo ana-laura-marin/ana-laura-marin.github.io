@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#fef9ec"/>
+  <rect x="60" y="80" width="220" height="45" rx="22" fill="#fbbf24" opacity="0.7"/>
+  <text x="170" y="108" text-anchor="middle" fill="#78350f" font-family="system-ui" font-size="14">😊 positivo — 97.8%</text>
+  <rect x="60" y="145" width="130" height="45" rx="22" fill="#94a3b8" opacity="0.7"/>
+  <text x="125" y="173" text-anchor="middle" fill="#1e293b" font-family="system-ui" font-size="14">😐 neutro</text>
+  <rect x="60" y="210" width="100" height="45" rx="22" fill="#f87171" opacity="0.7"/>
+  <text x="110" y="238" text-anchor="middle" fill="#7f1d1d" font-family="system-ui" font-size="14">😞 negativo</text>
+  <text x="430" y="170" text-anchor="middle" fill="#92400e" font-family="system-ui" font-size="40">NLP</text>
+  <text x="300" y="305" text-anchor="middle" fill="#92400e" font-family="system-ui" font-size="16" font-weight="600">Análisis de Sentimiento · NLP</text>
+</svg>
