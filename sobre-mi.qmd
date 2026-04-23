@@ -2,28 +2,28 @@
 title: "Sobre mí"
 about:
   template: solana
-  image: assets/img/perfil.jpg
+  image: assets/img/perfil.png
   image-alt: "Foto de Tu Nombre"
   image-shape: round
   links:
     - icon: github
       text: GitHub
-      href: https://github.com/juanperez
+      href: https://github.com/ana-laura-marin
     - icon: linkedin
       text: LinkedIn
-      href: https://linkedin.com/in/juanperez
+      href: https://www.linkedin.com/in/analauramarin
     - icon: file-earmark-pdf
       text: CV
       href: assets/pdf/cv.pdf
 ---
 
-Hola soy Alejandra Lopez. 
+Hola soy Ana Laura Marín. 
 
-Soy científico de datos con experiencia en la ciencia de datos. Me formé en STATO PRO y me apasiona resolver problemas complejos utilizando datos. He trabajado con proyectos que van desde análisis exploratorio hasta modelos en producción.
+Soy economista y científica de datos con experiencia en análisis financiero, banca e investigación económica. Me formé en Economía en la UCR, en ciencia de datos en STATO PRO y actualmente curso un MBA con énfasis en Finanzas. Me interesa la intersección entre datos, estrategia y banca, y cómo transformar información en soluciones prácticas con impacto. 
 
-Me interesa especialmente [tema 1], [tema 2] y [tema 3]. Cuando no estoy analizando datos, [hobby/actividad].
+Me interesa especialmente la estrategia de pricing en banca, el impacto de las tendencias fintech en la banca tradicional, y el uso de modelos de series de tiempo para análisis y proyección de datos. Cuando no estoy analizando datos hago pilates, cerámica y baile. 
 
-Estoy abierto/a a colaboraciones, preguntas sobre mis proyectos o simplemente conectar con personas del área.
+Estoy abierta a colaboraciones, preguntas sobre mis proyectos o simplemente conectar con personas del área.
 
 ## Experiencia técnica
 
@@ -44,6 +44,6 @@ PostgreSQL, MySQL, BigQuery, AWS S3
 
 ## Formación
 
-**[Título]** · [Institución] · [Año]
+**MBA en finanzas** ·Universidad de Costa Rica · En proceso
 
-**[Certificación o curso relevante]** · [Plataforma] · [Año]
+**Bachiller en Economía** ·Universidad de Costa Rica · 2023

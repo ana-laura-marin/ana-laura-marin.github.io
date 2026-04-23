@@ -3,9 +3,9 @@ project:
   output-dir: _site
 
 website:
-  title: "Tu Nombre"
+  title: "Ana Laura Marín Sánchez"
   description: "Portafolio de ciencia de datos"
-  site-url: "https://tu-usuario.github.io"
+  site-url: "https://github.com/ana-laura-marin"
   favicon: assets/favicon.svg
   open-graph: true
   twitter-card: true
@@ -13,24 +13,24 @@ website:
   navbar:
     background: light
     foreground: dark
-    title: "Tu Nombre"
+    title: "Ana Laura Marín Sánchez"
     left:
       - text: Proyectos
         href: proyectos/index.qmd
       - text: Blog
         href: blog/index.qmd
-      - text: Sobre mí
+      - text: Sobre mi
         href: sobre-mi.qmd
     right:
       - icon: github
-        href: https://github.com/tu-usuario
+        href: https://github.com/ana-laura-marin
         aria-label: GitHub
       - icon: linkedin
-        href: https://linkedin.com/in/tu-usuario
+        href: https://www.linkedin.com/in/analauramarin
         aria-label: LinkedIn
 
   page-footer:
-    left: "© 2025 Tu Nombre"
+    left: "© 2026 Ana Laura Marín Sánchez"
     right: "Hecho con [Quarto](https://quarto.org) y Jupyter"
 
   search:
@@ -50,3 +50,5 @@ format:
 
 execute:
   freeze: auto
+
+jupyter: python3

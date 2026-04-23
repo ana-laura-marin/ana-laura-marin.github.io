@@ -10,7 +10,7 @@ Thumbs.db
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-
+.venv/
 # Nota: _freeze/ SÍ se sube a Git (contiene outputs congelados)
 # Nota: los .ipynb SÍ se suben (son el contenido del portafolio)
 

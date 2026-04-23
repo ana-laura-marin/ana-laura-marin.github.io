@@ -1,22 +1,22 @@
 ---
-title: "Tu Nombre"
-subtitle: "Científico de Datos"
+title: "Ana Laura Marín Sánchez"
+subtitle: "Economista - Científica de Datos"
 about:
   id: hero
   template: trestles
-  image: assets/img/perfil.jpg
+  image: assets/img/perfil.png
   image-alt: "Foto de Tu Nombre"
   image-shape: round
   links:
     - icon: github
       text: GitHub
-      href: https://github.com/tu-usuario
+      href: https://github.com/ana-laura-marin
     - icon: linkedin
       text: LinkedIn
-      href: https://linkedin.com/in/tu-usuario
+      href: https://www.linkedin.com/in/analauramarin
     - icon: envelope
       text: Correo
-      href: "mailto:tu@correo.com"
+      href: "mailto:marin.ana.laura@gmail.com"
 listing:
   - id: proyectos-destacados
     contents: proyectos/*/index.ipynb
@@ -37,9 +37,9 @@ toc: false
 
 :::{#hero}
 
-Hola, soy **Tu Nombre**. Me especializo en análisis de datos y machine learning. Actualmente trabajo en [empresa/universidad] en [ciudad, país].
+Hola, soy **Ana Laura**. Me especializo en análisis de datos y machine learning. Trabajo con datos para resolver problemas en la industria bancaria comercial en McKinsey & Company
 
-Aquí comparto proyectos que muestran cómo resuelvo problemas reales con datos.
+Aquí comparto proyectos con datos públicos que muestran cómo resuelvo problemas reales 
 
 :::
 
