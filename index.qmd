@@ -41,6 +41,7 @@ Hola, soy **Ana Laura**. Me especializo en análisis de datos y machine learning
 
 Aquí comparto proyectos con datos públicos que muestran cómo resuelvo problemas reales 
 
+Hola 
 :::
 
 ## Proyectos destacados
