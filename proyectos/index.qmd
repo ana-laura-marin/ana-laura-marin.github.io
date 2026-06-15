@@ -2,7 +2,9 @@
 title: "Proyectos"
 listing:
   id: todos-los-proyectos
-  contents: "*/index.ipynb"
+  contents:
+      - "*/index.ipynb"
+      - "*/index.qmd"
   type: grid
   grid-columns: 2
   sort: "date desc"

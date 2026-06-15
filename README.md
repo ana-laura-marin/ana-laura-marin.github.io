@@ -58,16 +58,27 @@ git add -A && git commit -m "agregar proyecto X" && git push
 ├── sobre-mi.qmd                 ← Página "Sobre mí"
 ├── proyectos/
 │   ├── index.qmd                ← Listing de todos los proyectos
-│   ├── _metadata.yml            ← Config compartida para todos los notebooks
-│   ├── churn-telecom/
+│   ├── _metadata.yml            ← Config compartida para todos los proyectos
+│   ├── 1-ejercicio-sql/
 │   │   ├── index.ipynb          ← Notebook del proyecto (con celda Raw YAML)
-│   │   └── thumbnail.png        ← Imagen para el listing (600×340px)
+│   │   └── data/                ← Bases de datos SQLite
+│   ├── churn-telecom/
+│   │   ├── index.ipynb
+│   │   └── thumbnail.png
 │   ├── eda-inmobiliario/
 │   │   ├── index.ipynb
 │   │   └── thumbnail.png
-│   └── sentimiento-nlp/
-│       ├── index.ipynb
-│       └── thumbnail.png
+│   ├── sentimiento-nlp/
+│   │   ├── index.ipynb
+│   │   └── thumbnail.png
+│   └── capm-costo-capital/      ← Proyecto multi-módulo
+│       ├── index.qmd            ← Página que embebe los 4 notebooks
+│       ├── thumbnail.png
+│       └── notebooks/
+│           ├── 01_tasa_libre_riesgo.ipynb
+│           ├── 02_prima_riesgo_mercado.ipynb
+│           ├── 03_beta.ipynb
+│           └── 04_capm_costo_capital.ipynb
 ├── blog/
 │   ├── index.qmd                ← Listing del blog
 │   ├── _metadata.yml
@@ -75,7 +86,7 @@ git add -A && git commit -m "agregar proyecto X" && git push
 │       └── index.qmd
 ├── assets/
 │   ├── img/
-│   │   └── perfil.jpg           ← Reemplazar con tu foto
+│   │   └── perfil.png
 │   └── favicon.svg
 ├── styles/
 │   └── custom.scss              ← Estilos personalizados

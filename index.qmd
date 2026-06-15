@@ -19,7 +19,9 @@ about:
       href: "mailto:marin.ana.laura@gmail.com"
 listing:
   - id: proyectos-destacados
-    contents: proyectos/*/index.ipynb
+    contents:
+      - proyectos/*/index.ipynb
+      - proyectos/*/index.qmd
     type: grid
     grid-columns: 2
     sort: "date desc"
