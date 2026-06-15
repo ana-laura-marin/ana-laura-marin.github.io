@@ -39,11 +39,14 @@ toc: false
 
 :::{#hero}
 
-Hola, soy **Ana Laura**. Me especializo en análisis de datos y machine learning. Trabajo con datos para resolver problemas en la industria bancaria comercial en McKinsey & Company
+Hola, soy **Ana Laura**. Soy economista, apasionada por las finanzas, los datos y la tecnología. Mi experiencia combina análisis financiero, banca, estrategia y automatización, con un enfoque práctico orientado a resolver problemas reales.
 
+He trabajado en proyectos para instituciones financieras de América Latina, Estados Unidos y Europa, utilizando herramientas de análisis de datos para transformar información compleja en decisiones más inteligentes.
+
+Me interesa especialmente la convergencia entre finanzas, ciencia de datos y políticas públicas, así como la generación de conocimiento que contribuya al desarrollo económico y social.
+
+<!-- Este espacio reúne algunos de mis proyectos, publicaciones, investigaciones e intereses profesionales. -->
 Aquí comparto proyectos con datos públicos que muestran cómo resuelvo problemas reales 
-
-Hola 
 :::
 
 ## Proyectos destacados
