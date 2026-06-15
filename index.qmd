@@ -46,7 +46,7 @@ He trabajado en proyectos para instituciones financieras de América Latina, Est
 Me interesa especialmente la convergencia entre finanzas, ciencia de datos y políticas públicas, así como la generación de conocimiento que contribuya al desarrollo económico y social.
 
 <!-- Este espacio reúne algunos de mis proyectos, publicaciones, investigaciones e intereses profesionales. -->
-Aquí comparto proyectos con datos públicos que muestran cómo resuelvo problemas reales 
+Aquí comparto proyectos con datos públicos que muestran cómo resuelvo problemas reales.
 :::
 
 ## Proyectos destacados
