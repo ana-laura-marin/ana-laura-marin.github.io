@@ -5,7 +5,7 @@ project:
 website:
   title: "Ana Laura Marín Sánchez"
   description: "Portafolio de ciencia de datos"
-  site-url: "https://github.com/ana-laura-marin"
+  site-url: "https://ana-laura-marin.github.io"
   favicon: assets/favicon.svg
   open-graph: true
   twitter-card: true

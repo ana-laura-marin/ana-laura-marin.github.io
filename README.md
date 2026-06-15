@@ -1,14 +1,13 @@
-# 🗂️ Portafolio de Ciencia de Datos
+# Portafolio de Ciencia de Datos
 
 Portafolio personal construido con [Quarto](https://quarto.org) y
-[Jupyter Notebooks](https://jupyter.org/), desplegado automáticamente
-en GitHub Pages.
+[Jupyter Notebooks](https://jupyter.org/), desplegado automáticamente en GitHub Pages.
 
-## Demo
+<!-- ## Demo
 
-👉 [tu-usuario.github.io](https://tu-usuario.github.io)
+👉 [ana-laura-marin.github.io](https://ana-laura-marin.github.io) -->
 
-## Cómo usar esta plantilla
+<!-- ## Cómo usar esta plantilla
 
 ### Prerrequisitos
 
@@ -40,17 +39,17 @@ en GitHub Pages.
    ```bash
    git add -A && git commit -m "mi portafolio" && git push
    ```
-9. Configura GitHub Pages (Settings → Pages → Source: GitHub Actions).
+9. Configura GitHub Pages (Settings → Pages → Source: GitHub Actions). -->
 
-### Agregar un proyecto nuevo
+<!-- ### Agregar un proyecto nuevo
 
 ```bash
 python scripts/preparar_notebook.py mi-notebook.ipynb
 quarto render
 git add -A && git commit -m "agregar proyecto X" && git push
-```
+``` -->
 
-### Estructura del repositorio
+# Estructura del repositorio
 
 ```
 .
@@ -90,7 +89,7 @@ git add -A && git commit -m "agregar proyecto X" && git push
 └── README.md
 ```
 
-### Personalización
+<!-- ### Personalización
 
 - **Colores y fuentes:** editar `styles/custom.scss`
 - **Navegación:** editar `website.navbar` en `_quarto.yml`
@@ -134,4 +133,4 @@ python scripts/preparar_notebook.py ~/notebooks/mi-analisis.ipynb \
 
 ## Licencia
 
-MIT
+MIT -->
