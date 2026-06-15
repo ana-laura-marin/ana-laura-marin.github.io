@@ -3,7 +3,7 @@ title: "Costo de Capital con CAPM"
 description: "Estimación del costo de capital y WACC de Tesla usando datos reales de la Fed y Yahoo Finance. Workshop en 4 módulos: tasa libre de riesgo, prima de riesgo, beta y CAPM."
 date: "2026-06-15"
 categories: [Finanzas, Python, Series de Tiempo]
-image: thumbnail.png
+image: thumbnail.svg
 destacado: "true"
 toc: true
 toc-depth: 2
