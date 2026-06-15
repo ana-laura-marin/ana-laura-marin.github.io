@@ -1,0 +1,30 @@
+---
+title: "Costo de Capital con CAPM"
+description: "Estimación del costo de capital y WACC de Tesla usando datos reales de la Fed y Yahoo Finance. Workshop en 4 módulos: tasa libre de riesgo, prima de riesgo, beta y CAPM."
+date: "2026-06-15"
+categories: [Finanzas, Python, Series de Tiempo]
+image: thumbnail.png
+destacado: "true"
+toc: true
+toc-depth: 2
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Módulo 1 · Tasa libre de riesgo
+
+{{< embed notebooks/01_tasa_libre_riesgo.ipynb echo=true >}}
+
+## Módulo 2 · Prima de riesgo del mercado
+
+{{< embed notebooks/02_prima_riesgo_mercado.ipynb echo=true >}}
+
+## Módulo 3 · Beta
+
+{{< embed notebooks/03_beta.ipynb echo=true >}}
+
+## Módulo 4 · CAPM y costo de capital
+
+{{< embed notebooks/04_capm_costo_capital.ipynb echo=true >}}
