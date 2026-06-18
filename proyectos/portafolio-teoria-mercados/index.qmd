@@ -1,0 +1,34 @@
+---
+title: "Teoría de Portafolios y Pricing de Activos"
+description: "Replicación completa en Python de un análisis de econometría financiera: frontera eficiente, CAPM, tests de Blume-Friend y GRS, y modelo de cuatro factores de Fama-French-Carhart usando acciones del S&P 500."
+date: "2026-06-18"
+categories: [Finanzas, Python, Inversiones, Econometría]
+image: thumbnail.svg
+destacado: "true"
+toc: true
+toc-depth: 2
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Módulo 1 · Índices de mercado y estadística descriptiva
+
+{{< embed notebooks/01_indices_descriptiva.ipynb echo=true >}}
+
+## Módulo 2 · Frontera eficiente
+
+{{< embed notebooks/02_frontera_eficiente.ipynb echo=true >}}
+
+## Módulo 3 · CAPM de Sharpe
+
+{{< embed notebooks/03_capm.ipynb echo=true >}}
+
+## Módulo 4 · Tests del CAPM
+
+{{< embed notebooks/04_tests_capm.ipynb echo=true >}}
+
+## Módulo 5 · Modelo de cuatro factores Fama-French-Carhart
+
+{{< embed notebooks/05_fama_french.ipynb echo=true >}}
