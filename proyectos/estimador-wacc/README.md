@@ -96,9 +96,11 @@ La aplicación se abrirá en el navegador (por defecto en `http://localhost:8501
 
 ## Despliegue en Streamlit Community Cloud
 
-La app puede publicarse gratis en [Streamlit Community Cloud](https://share.streamlit.io)
-para obtener una URL pública (p. ej. `https://estimador-wacc-analaura.streamlit.app`,
-la que enlaza el botón *"Abrir demo"* de la página del portafolio).
+La app está publicada en [Streamlit Community Cloud](https://share.streamlit.io):
+
+**Demo en vivo → <https://estimador-wacc-ana-laura.streamlit.app>**
+
+(es la URL que enlaza el botón *"Abrir demo"* de la página del portafolio).
 
 Pasos:
 
@@ -110,7 +112,7 @@ Pasos:
    - **Repository:** `ana-laura-marin/ana-laura-marin.github.io`
    - **Branch:** `main`
    - **Main file path:** `proyectos/estimador-wacc/app.py`
-   - **App URL (subdominio):** `estimador-wacc-analaura`
+   - **App URL (subdominio):** `estimador-wacc-ana-laura`
      (debe coincidir con el botón de la página; si está ocupado, elige otro y
      actualiza el enlace en `index.qmd`).
 4. **Advanced settings → Python version:** selecciona **3.11** (o 3.12).

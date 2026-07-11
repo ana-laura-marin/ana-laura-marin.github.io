@@ -22,7 +22,7 @@ de capital: **beta sectorial → apalancamiento financiero (Hamada) → prima de
 riesgo país → costo de deuda → escudo fiscal → WACC**, y acompaña cada resultado
 con visualizaciones y una interpretación automática.
 
-[Abrir demo interactiva](https://estimador-wacc-analaura.streamlit.app){.btn .btn-primary role="button"}
+[Abrir demo interactiva](https://estimador-wacc-ana-laura.streamlit.app){.btn .btn-primary role="button"}
 &nbsp;
 [Ver código en GitHub](https://github.com/ana-laura-marin/ana-laura-marin.github.io/tree/main/proyectos/estimador-wacc){.btn .btn-outline-primary role="button"}
 
