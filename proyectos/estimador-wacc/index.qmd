@@ -1,0 +1,131 @@
+---
+title: "Estimador de WACC para mercados seleccionados"
+description: "Aplicación interactiva en Streamlit para estimar el WACC de una empresa según país, industria y estructura de capital. Combina beta sectorial, fórmula de Hamada, prima de riesgo país, escudo fiscal y análisis de escenarios con Plotly."
+date: "2026-07-10"
+categories: [Finanzas, Python, Streamlit, Costo de Capital]
+image: thumbnail.svg
+destacado: "true"
+toc: true
+toc-depth: 2
+---
+
+## Resumen
+
+Aplicación web interactiva construida con **Streamlit** que estima el **Costo
+Promedio Ponderado de Capital (WACC)** de una empresa hipotética a partir de tres
+decisiones del usuario: el **país**, la **industria** y la **estructura de
+capital** (porcentaje de deuda). La moneda de valoración se asume en **dólares
+estadounidenses (USD)**.
+
+La herramienta encadena, de forma transparente, los bloques que componen el costo
+de capital: **beta sectorial → apalancamiento financiero (Hamada) → prima de
+riesgo país → costo de deuda → escudo fiscal → WACC**, y acompaña cada resultado
+con visualizaciones y una interpretación automática.
+
+[Abrir demo interactiva](https://estimador-wacc-analaura.streamlit.app){.btn .btn-primary role="button"}
+&nbsp;
+[Ver código en GitHub](https://github.com/ana-laura-marin/ana-laura-marin.github.io/tree/main/proyectos/estimador-wacc){.btn .btn-outline-primary role="button"}
+
+> **Naturaleza demostrativa.** Todos los datos incorporados (betas, primas de
+> riesgo país, tasa libre de riesgo y prima de mercado) son **ilustrativos** y
+> están marcados en el código para reemplazarse por los valores vigentes de
+> [Damodaran](https://pages.stern.nyu.edu/~adamodar/). No constituye asesoría
+> financiera.
+
+## Qué calcula
+
+A partir de los inputs, la aplicación reporta siete indicadores en tarjetas:
+
+1. Beta apalancado promedio de la industria.
+2. Beta desapalancado de la industria.
+3. Beta apalancado ajustado a la estructura de capital.
+4. Prima de riesgo país.
+5. Costo del patrimonio.
+6. Costo de la deuda después de impuestos.
+7. **WACC.**
+
+Y las complementa con:
+
+- **Gráfico de línea** del WACC para niveles de deuda de 10% a 90%, resaltando el
+  nivel seleccionado (Plotly).
+- **Gráfico de barras** con la composición del WACC (aporte de patrimonio y de
+  deuda), cuya suma equivale al WACC.
+- **Tabla de resumen**, **interpretación automática** y una sección metodológica
+  con las fórmulas.
+
+## Metodología y fórmulas
+
+$$ D/E = \frac{\%\,\text{Deuda}}{\%\,\text{Patrimonio}} $$
+
+$$ \beta_L = \beta_U \left[ 1 + (1 - t)\,\frac{D}{E} \right] \quad \text{(Hamada)} $$
+
+$$ K_e = R_f + \beta_L \cdot PRM + CRP $$
+
+$$ K_d^{dt} = K_d \,(1 - t) $$
+
+$$ WACC = K_e \cdot W_e + K_d \,(1 - t)\, W_d $$
+
+La prima de riesgo país ($CRP$) se incorpora de forma **aditiva** al costo del
+patrimonio (no se multiplica por el beta), y Estados Unidos se toma como mercado
+maduro de referencia con $CRP = 0\%$.
+
+## Núcleo de cálculo
+
+El corazón de la aplicación son funciones puras y testeables. Este es el bloque
+que traduce las fórmulas anteriores a código:
+
+```python
+def calculate_levered_beta(unlevered_beta, tax_rate, debt_to_equity):
+    """Beta apalancado ajustado (Hamada): β_L = β_U · [1 + (1 − t)·(D/E)]."""
+    return unlevered_beta * (1 + (1 - tax_rate) * debt_to_equity)
+
+
+def calculate_cost_of_equity(risk_free_rate, levered_beta,
+                             market_risk_premium, country_risk_premium):
+    """CAPM con prima de riesgo país aditiva: Ke = Rf + β_L·PRM + CRP."""
+    return risk_free_rate + levered_beta * market_risk_premium + country_risk_premium
+
+
+def calculate_after_tax_cost_of_debt(pretax_cost_of_debt, tax_rate):
+    """Escudo fiscal: Kd_dt = Kd · (1 − t)."""
+    return pretax_cost_of_debt * (1 - tax_rate)
+
+
+def calculate_wacc(cost_of_equity, equity_weight,
+                   pretax_cost_of_debt, tax_rate, debt_weight):
+    """WACC = Ke·We + Kd·(1 − t)·Wd."""
+    return (cost_of_equity * equity_weight
+            + pretax_cost_of_debt * (1 - tax_rate) * debt_weight)
+```
+
+## Cómo ejecutarla
+
+El proyecto es autocontenido: los datos ilustrativos viven en el propio `app.py`,
+sin dependencias de archivos externos.
+
+```bash
+# 1. Instalar dependencias (Python 3.9+)
+pip install -r requirements.txt
+
+# 2. Ejecutar la app
+streamlit run app.py
+```
+
+La aplicación se abre en `http://localhost:8501`.
+
+## Código fuente
+
+El proyecto completo (`app.py`, `requirements.txt` y `README.md`) está disponible
+en el repositorio:
+
+- [`app.py`](https://github.com/ana-laura-marin/ana-laura-marin.github.io/blob/main/proyectos/estimador-wacc/app.py) — aplicación Streamlit (lógica, cálculos y dashboard).
+- [`requirements.txt`](https://github.com/ana-laura-marin/ana-laura-marin.github.io/blob/main/proyectos/estimador-wacc/requirements.txt) — dependencias.
+- [`README.md`](https://github.com/ana-laura-marin/ana-laura-marin.github.io/blob/main/proyectos/estimador-wacc/README.md) — documentación completa y guía de actualización de datos.
+
+## Limitaciones
+
+Herramienta educativa: los datos sectoriales y las primas de riesgo deben
+actualizarse periódicamente; el costo de la deuda se mantiene fijo en el análisis
+de escenarios; y el modelo no incorpora prima por tamaño, lambda de exposición al
+riesgo país ni costo de deuda sintético. No sustituye un análisis financiero
+completo.
