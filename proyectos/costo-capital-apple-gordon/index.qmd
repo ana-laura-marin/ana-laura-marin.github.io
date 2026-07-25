@@ -1,0 +1,157 @@
+---
+title: "Costo de Capital de Apple · Modelo de Gordon"
+description: "Análisis integral de Apple Inc. (AAPL): determinación del WACC (beta, modelo de Gordon, costo de la deuda e impuestos), condición financiera, proyecciones y desempeño de mercado, y riesgos y oportunidades. Basado en el 10-K, el 10-Q y fuentes públicas de mercado."
+date: "2026-07-24"
+categories: [Finanzas, Python, Valoración, Series de Tiempo]
+image: thumbnail.svg
+destacado: "true"
+toc: true
+toc-depth: 2
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introducción
+
+Este informe determina el **Costo Promedio Ponderado de Capital (WACC)** de **Apple Inc.
+(NASDAQ: AAPL)** —una empresa que cotiza en la bolsa de Estados Unidos— y, a partir de él,
+desarrolla un análisis integral de la compañía. Se construye el WACC a partir de sus
+componentes (beta, costo del capital propio por los modelos de Gordon y CAPM, y costo de la
+deuda e impuestos) y luego se evalúa la condición financiera, las proyecciones y el desempeño
+de mercado, y los riesgos y oportunidades. Cierra con una **conclusión con recomendaciones** y
+la **bibliografía**. Todos los cálculos usan datos del **10-K (FY2025)** y **10-Q (Q2-2026)** de
+Apple, además de fuentes públicas de mercado citadas.
+
+**Estructura del informe:**
+
+| Sección | Contenido | Requisito de la rúbrica |
+|---|---|---|
+| Módulo 1 | Beta de la acción y su condición de riesgo | Beta |
+| Módulo 2 | Costo del capital propio — modelo de Gordon | Costo accionario (Gordon) |
+| Módulo 3 | Costo de la deuda y tasa impositiva | Costo de deuda + impuestos |
+| Módulo 4 | WACC | Costo Promedio Ponderado de Capital |
+| Módulo 5 | Condición financiera (balance y estado de resultados) | Información financiera |
+| Módulos 6–7 | Proyecciones y desempeño en el mercado | Proyecciones y desempeño |
+| Módulo 8 | Riesgos y oportunidades | Riesgos y oportunidades |
+| Cierre | Conclusión y recomendaciones · Bibliografía | Conclusión · Bibliografía |
+
+## Módulo 1 · Beta de la acción
+
+{{< embed notebooks/01_beta.ipynb echo=true >}}
+
+## Módulo 2 · Costo de capital con el modelo de Gordon
+
+{{< embed notebooks/02_modelo_gordon.ipynb echo=true >}}
+
+## Módulo 3 · Costo de la deuda y tasa impositiva
+
+{{< embed notebooks/03_costo_deuda.ipynb echo=true >}}
+
+## Módulo 4 · WACC
+
+{{< embed notebooks/04_wacc.ipynb echo=true >}}
+
+## Módulo 5 · Análisis de la condición financiera
+
+{{< embed notebooks/05_condicion_financiera.ipynb echo=true >}}
+
+## Módulo 6 · Proyecciones financieras y desempeño de mercado
+
+{{< embed notebooks/06_proyecciones_mercado.ipynb echo=true >}}
+
+## Módulo 7 · Proyección financiera propia (modelo driver-based)
+
+{{< embed notebooks/07_proyeccion_modelo.ipynb echo=true >}}
+
+## Módulo 8 · Riesgos y oportunidades
+
+{{< embed notebooks/08_riesgos_oportunidades.ipynb echo=true >}}
+
+## Conclusión general y recomendaciones
+
+### Síntesis de resultados
+
+Cuadro que consolida los hallazgos de los ocho módulos:
+
+| Dimensión | Indicador | Resultado |
+|---|---|---|
+| Riesgo sistemático | Beta (vs. S&P 500) | **1.09** — se mueve casi como el mercado, amplificándolo ~9 % |
+| Costo del capital propio | ke (Gordon) | 4.5 %–7.9 % (según la ventana de crecimiento de dividendos) |
+| | ke (CAPM, caso base) | ~9.2 % |
+| Costo de la deuda | kd (antes de impuestos) | 3.00 % |
+| | Tasa impositiva efectiva | 17.46 % |
+| | kd después de impuestos | 2.47 % |
+| Estructura de capital (mercado) | Deuda / Capital propio | 1.7 % / 98.3 % |
+| **Costo de capital** | **WACC (caso base)** | **~9.1 %** (rango 6.2 %–13.9 % por escenario) |
+| Condición financiera | ROIC / ROE | ~65 % / ~152 % |
+| | Margen operativo / neto | 32.0 % / 26.9 % |
+| | Liquidez | Caja neta ~USD 34 mil M; ciclo de conversión ≈ −71 días |
+| Proyección propia | Ingresos / EPS 2028E | ~USD 482 mil M / ~USD 9.34 |
+| Mercado | P/E forward / precio objetivo | ~38x / USD 318.81 (−4 % vs. precio) |
+| | Recomendación de analistas | "Comprar" (60 % buy) |
+
+### Conclusión
+
+Apple es una empresa **financieramente excepcional pero de crecimiento maduro**, cuyo **costo de
+capital (WACC) se sitúa en torno al 9 %**. Como su estructura de financiamiento es ~98 % capital
+propio a valor de mercado, el WACC está determinado casi por completo por el **costo del capital
+accionario**; la deuda —barata (2.47 % después de impuestos) y en posición de **caja neta**—
+apenas influye. El **beta de 1.09** confirma un riesgo sistemático ligeramente superior al del
+mercado. Es importante notar que el **modelo de Gordon subestima el costo del capital propio**
+(por el bajo dividendo de Apple), por lo que el **CAPM (~9.2 %)** resulta más representativo.
+
+La **condición financiera es de primer nivel**: márgenes altos y crecientes, ROIC ~65 %,
+generación de caja masiva y una posición de caja neta que hace que los **riesgos financieros sean
+bajos**. Las **proyecciones** —tanto el consenso de analistas como el modelo propio— apuntan a un
+crecimiento sostenible de un dígito medio en ingresos y de ~8–10 % en el EPS, apalancado por
+Services, la IA y las recompras. No obstante, la acción **cotiza cara** (~38x utilidades
+*forward*, por encima del precio objetivo promedio de los analistas), y su mayor vulnerabilidad
+es **regulatoria** (App Store/DMA y el acuerdo de búsqueda con Google).
+
+### Recomendaciones
+
+1. **Uso corporativo del WACC.** Emplear un **WACC de referencia de ~9 % (rango 8–10 %)** como
+   tasa de descuento para evaluar proyectos e inversiones de Apple; solo deberían aprobarse
+   aquellos cuyo retorno esperado la supere.
+2. **Costo del capital propio.** Preferir el **CAPM (~9.2 %)** sobre el modelo de Gordon para
+   Apple, dado que su bajo reparto de dividendos hace que Gordon subestime el ke.
+3. **Perspectiva de inversión.** Empresa de **altísima calidad**, apropiada para el **largo plazo
+   (mantener)**, pero con **valuación exigente**: el potencial alcista a 12 meses es limitado
+   según el consenso, por lo que conviene ser selectivo con el precio de entrada.
+4. **Factores a vigilar.** Los **desenlaces regulatorios** (acuerdo con Google, DMA/App Store), la
+   **ejecución en IA** (Apple Intelligence) y el **ciclo del iPhone**, por su peso en los ingresos
+   y en el múltiplo de valuación.
+5. **Palancas de valor.** El crecimiento de **Services**, el programa de **recompras** (acreción
+   de EPS ~2.6 %/año) y la **diversificación a India** sostienen el valor para el accionista.
+
+## Bibliografía
+
+**Fuentes primarias (documentos regulatorios)**
+
+- Apple Inc. (2025). *Formulario 10-K — Año fiscal 2025* (cerrado el 27 de septiembre de 2025). U.S. Securities and Exchange Commission.
+- Apple Inc. (2026). *Formulario 10-Q — 2.º trimestre fiscal 2026* (cerrado el 28 de marzo de 2026). U.S. Securities and Exchange Commission.
+
+**Datos de mercado y proyecciones**
+
+- Yahoo Finance. *Precios históricos de AAPL, ^GSPC (S&P 500), ^TNX (bono del Tesoro a 10 años) y dividendos.* <https://finance.yahoo.com/quote/AAPL/>
+- stockanalysis.com. *Apple (AAPL) — Analyst Forecast & Price Targets.* <https://stockanalysis.com/stocks/aapl/forecast/>
+- Simply Wall St. *Apple — Future Growth.* <https://simplywall.st/stocks/us/tech/nasdaq-aapl/apple/future>
+- financecharts. *Apple (AAPL) — Price Summary.* <https://www.financecharts.com/stocks/AAPL/summary/price>
+- WallStreetZen. *AAPL Stock Forecast.* <https://www.wallstreetzen.com/stocks/us/nasdaq/aapl/stock-forecast>
+- TheStreet. *Bank of America sends clear message on Apple stock before earnings.* <https://www.thestreet.com/investing/stocks/bank-of-america-sends-clear-message-on-apple-stock-before-earnings>
+
+**Noticias y contexto (riesgos y oportunidades)**
+
+- CNBC. *Apple Q2 2026 earnings report.* <https://www.cnbc.com/2026/04/30/apple-aapl-q2-2026-earnings-report.html>
+- Statista. *iPhone revenue as share of Apple's total revenue.* <https://www.statista.com/statistics/253649/iphone-revenue-as-share-of-apples-total-revenue/>
+- MacRumors. *Apple Antitrust* y *EU Court Upholds DMA Rules on Apple's iOS and App Store.* <https://www.macrumors.com/guide/antitrust/>
+- tech-insider.org. *Google's Search Monopoly Faces DOJ Breakup (2026).* <https://tech-insider.org/google-antitrust-appeal-doj-search-monopoly-2026/>
+
+**Marco teórico (metodología)**
+
+- Sharpe, W. F. (1964). *Capital Asset Prices: A Theory of Market Equilibrium under Conditions of Risk.* The Journal of Finance, 19(3).
+- Gordon, M. J. (1959). *Dividends, Earnings, and Stock Prices.* The Review of Economics and Statistics, 41(2).
+
+*Datos de mercado consultados al 23–24 de julio de 2026.*
