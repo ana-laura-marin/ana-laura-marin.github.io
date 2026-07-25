@@ -5,8 +5,9 @@ date: "2026-06-18"
 categories: [Finanzas, Python, Inversiones, Econometría]
 image: thumbnail.svg
 destacado: "true"
-toc: true
-toc-depth: 2
+toc: false
+notebook-links: inline
+page-layout: full
 execute:
   echo: true
   warning: false

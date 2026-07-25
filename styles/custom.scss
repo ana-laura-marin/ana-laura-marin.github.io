@@ -25,6 +25,14 @@ $navbar-fg: #1a1a1a;
   margin: 0 auto;
 }
 
+// Páginas a ancho completo (page-layout: full, sin barra lateral derecha).
+// El <main> es un grid item; con `margin: 0 auto` se dimensiona a su max-content
+// (limitado por max-width) y desborda en pantallas estrechas. Con width: 100%
+// llena su celda de grid, respeta el max-width y queda centrado y responsive.
+.quarto-container.page-layout-full main.content {
+  width: 100%;
+}
+
 // Tarjetas de listing
 .quarto-listing-default .listing-item,
 .quarto-grid-item {
