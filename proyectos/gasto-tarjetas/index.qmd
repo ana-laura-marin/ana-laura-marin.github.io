@@ -1,0 +1,236 @@
+---
+title: "Composición del gasto con tarjeta de crédito"
+description: "Dos clientes que gastan lo mismo pueden ser negocios opuestos. Un recorrido por la composición de la canasta de consumo, los marcadores conductuales que separan el gasto por placer del gasto por necesidad, y una segmentación que no necesita que le digan cuántos grupos buscar."
+date: "2026-07-29"
+categories: [EDA, Python, Finanzas Conductuales, Clustering]
+image: thumbnail.svg
+destacado: "true"
+toc: true
+toc-depth: 2
+execute:
+  enabled: false
+---
+
+Dos clientes gastan 900 dólares al mes con la tarjeta. El primero los reparte
+entre el supermercado, la gasolinera y la farmacia. El segundo los concentra en
+un fin de semana largo, dos cenas y un pasaje. Para el estado de cuenta son
+idénticos. Para cualquier decisión de negocio (qué producto ofrecerles, cuánto
+riesgo representan, qué los haría irse) son personas distintas.
+
+Ese es el punto de partida: el monto agregado esconde más de lo que muestra, y
+lo interesante está en la **composición** de la canasta.
+
+::: {.callout-important}
+## Los datos son sintéticos
+
+El [dataset de transacciones con tarjeta de crédito](https://www.kaggle.com/datasets/priyamchoksi/credit-card-transactions-dataset)
+de Kaggle sobre el que se construye este análisis **no contiene transacciones
+reales**: está generado con Sparkov, un simulador. Ningún número de esta página
+describe entonces el comportamiento de tarjetahabientes de verdad: los grupos
+existen dentro de la simulación, y lo que el proyecto demuestra es que el método
+los encuentra. Las cifras mostradas se produjeron con un generador local que
+replica su esquema.
+:::
+
+## Dónde está el dinero
+
+Lo primero que aparece al mirar la base es que **frecuencia y valor son dos ejes
+distintos**, y confundirlos lleva a conclusiones opuestas.
+
+{{< embed notebooks/00_exploracion_datos.ipynb#fig-composicion >}}
+
+Viajes es el 27% del monto transado con apenas el 5.7% de las transacciones: un
+ticket promedio de 354 contra una mediana general de 46. Supermercado presencial
+hace exactamente lo contrario, 12.2% de las transacciones y 8.6% del monto.
+
+De ahí sale la primera decisión metodológica de todo lo que sigue: la
+composición se mide sobre el **monto** y no sobre el conteo. Medida por conteo,
+la canasta de casi todo el mundo se ve dominada por supermercado y combustible,
+y las categorías que de verdad diferencian a un cliente de otro desaparecen en
+el ruido de las compras chicas y repetidas.
+
+El eje de lectura del proyecto es la distinción entre **gasto hedónico**
+(entretenimiento, restaurantes, viajes, compras, cuidado personal) y
+**utilitario** (supermercado, combustible, hogar, salud, niños y mascotas). No
+es una clasificación validada, es una decisión del analista, y por eso está
+aislada en un solo archivo de configuración: para que sea fácil discutirla.
+
+## Cuándo se gasta dice qué se gasta
+
+Si la distinción hedónico/utilitario captura algo real y no es solo una etiqueta
+cómoda, tendría que dejar huella en dimensiones que nadie usó para construirla.
+Y la deja.
+
+{{< embed notebooks/01_analisis.ipynb#tbl-conductual >}}
+
+Tres marcadores, tres confirmaciones. El gasto hedónico ocurre de noche, 21.8%
+de sus transacciones contra 3.6% del utilitario, y su hora mediana son las 6 de
+la tarde contra la 1 del mediodía. El ticket promedio duplica al utilitario.
+
+Y el tercero es el más revelador: **el 18.2% de las compras utilitarias caen en
+montos redondos, contra el 6.3% de las hedónicas**. Un monto redondo es rastro
+de una compra deliberada, de alguien que decidió cuánto iba a gastar antes de
+llegar a la caja. El gasto por necesidad se planifica; el gasto por placer
+responde al precio que encuentra.
+
+{{< embed notebooks/01_analisis.ipynb#fig-horario >}}
+
+Las dos curvas casi no se superponen. No son dos intensidades del mismo
+comportamiento: son dos comportamientos.
+
+## Clustering: encontrar los grupos sin decidir cuántos
+
+La pregunta siguiente es si estos patrones agrupan a los clientes en tipos
+reconocibles. El método habitual, k-means, exige decidir de antemano cuántos
+grupos hay, que es justamente lo que uno quiere averiguar. DBSCAN no: los
+descubre por densidad, y a quien no encaja en ninguno lo marca como atípico en
+vez de forzarlo adentro.
+
+El obstáculo es que cada cliente se describe con 26 variables, y en esa
+dimensión todos terminan pareciéndose entre sí: la medida estándar de
+separación entre grupos da **0.24 sobre 1**, apenas mejor que repartirlos al
+azar. Comprimir las 26 variables a un mapa de dos dimensiones resuelve el
+problema.
+
+{{< embed notebooks/02_densidad.ipynb#fig-umap >}}
+
+La misma medida sube a **0.82**. Los cuatro grumos no los dibujó la compresión:
+estaban en los datos y no se veían.
+
+### Cómo decide DBSCAN
+
+Donde k-means asigna cada cliente al centro más cercano, DBSCAN mide **densidad
+local**: con un radio de vecindad y un mínimo de vecinos dentro de él, clasifica
+a cada cliente como **núcleo**, **frontera** o **ruido**.
+
+{{< embed notebooks/02_densidad.ipynb#fig-como-agrupa >}}
+
+Un grupo es una cadena de núcleos que se alcanzan entre sí, así que la cantidad
+sale de la geometría en vez de fijarse de antemano. Y quien no entra en ninguna
+cadena queda marcado como atípico, no empujado al grupo menos malo.
+
+{{< embed notebooks/02_densidad.ipynb#fig-dbscan >}}
+
+### Los cuatro grupos
+
+DBSCAN devuelve identificadores, no nombres. Las etiquetas de abajo son lectura
+del perfil (interpretación, no salida del algoritmo) y se pueden contrastar
+contra las columnas.
+
+{{< embed notebooks/02_densidad.ipynb#tbl-grupos >}}
+
+La primera lectura es de concentración, y es la que importa para cualquier
+decisión de cartera: **el grupo de alto valor experiencial es el 17.7% de los
+clientes y explica el 43.3% de la facturación**. Gasta 2.001 al mes con un
+ticket promedio de 184, casi cinco veces el del grupo más numeroso, y concentra
+en viajes, donde sobre-indexa 3.7 veces respecto del promedio de la cartera. Es
+el 91% hedónico: prácticamente todo su consumo es discrecional, lo que lo hace
+el grupo más rentable y a la vez el más sensible al ciclo.
+
+En el extremo opuesto, la *rutina de mantenimiento* es un cuarto de los
+clientes y apenas el 12.9% de la facturación: ticket de 39, gasto casi
+íntegramente utilitario (supermercado presencial, salud, hogar), 68 años de
+edad media y solo 6% en línea. Poco valor por cliente, pero es el gasto más
+predecible de toda la cartera y el que menos se mueve con el ciclo.
+
+Entre ambos, el *hogar con dependientes* funciona como el centro de gravedad:
+29% de los clientes y 26% de la facturación, casi en proporción. Sobre-indexa
+2.5 veces en niños y mascotas y 1.7 en hogar, con 43 años de edad media. Y el
+*digital joven* es el caso más interesante en trayectoria: 28 años, **52% de su
+gasto en línea** contra un 5-11% en todos los demás grupos, concentrado en
+compras online y entretenimiento. Hoy aporta 18% de la facturación con un
+ticket de 48, pero es el único grupo cuyo canal predominante es el digital.
+
+Contrastados contra los cuatro perfiles con los que se generaron los datos, la
+correspondencia es casi exacta: **3 asignaciones erradas de 600**.
+
+## Los que no encajan
+
+El cliente que DBSCAN dejó afuera no es un error a limpiar: los puntos de ruido
+suelen ser lo más informativo del análisis (la cuenta más rentable, el fraude,
+el error de captura que nadie vio). Con un solo caso no hay nada que promediar,
+así que se exige más densidad para ver quiénes caen primero. Aparecen 22.
+
+{{< embed notebooks/02_densidad.ipynb#tbl-outliers >}}
+
+El perfil es nítido: **marcadamente utilitarios**, con poco gasto nocturno y en
+línea, en ciudades más chicas. Pero la última columna cambia la lectura. Su
+percentil medio se mueve entre 32 y 72, o sea que **no son extremos en ninguna
+variable**: una cuenta de máximo valor o un fraude estarían pegados al 99 o al 1.
+
+Son casos *fronterizos*, no de cola, y eso cambia qué hacer con ellos. Un
+extremo se revisa uno por uno porque puede ser un error o la mejor cuenta de la
+cartera. Un fronterizo casi nunca es error: la pregunta que abre no es qué le
+pasa a ese cliente, sino si al esquema de segmentación le falta un grupo.
+
+## Conclusiones
+
+**Segmentar por composición y no por monto reordena las prioridades de cartera:
+el segmento que más factura no es el más numeroso, el más numeroso no es el más
+valioso, y el más digital todavía no es ninguno de los dos.**
+
+**1 · La facturación está concentrada en un segmento chico y enteramente
+discrecional.** El 17.7% de los clientes explica el 43.3% del monto, 2.5 veces
+su peso proporcional, con un ticket cinco veces mayor que el del grupo más
+numeroso y 91% de gasto hedónico. Es el segmento a defender, y también el
+primero que se contrae cuando el ciclo se da vuelta: no hay colchón de gasto de
+necesidad debajo.
+
+**2 · El volumen de clientes está donde no está el valor.** Rutina de
+mantenimiento y hogar con dependientes suman el 54% de los clientes y el 38.5%
+de la facturación. A cambio, es el flujo más predecible de la cartera:
+supermercado, hogar y salud no dependen del ánimo ni del ciclo. Son el piso, no
+el motor.
+
+**3 · Lo digital hoy es un rasgo de edad, no una fuente de valor.** El grupo
+digital joven es el único con mayoría de gasto en línea, 52% contra 5–11% en
+todos los demás, pero aporta 18% de la facturación con un ticket de 48 y 28 años
+de edad media. La pregunta que abre no es cuánto vale hoy, sino si migra hacia
+alto valor al envejecer o si su perfil de consumo se queda donde está.
+
+**4 · La estructura aparece sin postularla, y los que no encajan son señal de
+diseño.** Nadie le dijo al algoritmo cuántos grupos buscar: los cuatro salen de
+la densidad, con 3 asignaciones erradas de 600 al contrastarlos contra los
+perfiles con que se simularon los datos. Los clientes fronterizos no son ruido a
+descartar: marcan dónde el esquema de cuatro segmentos empieza a quedar corto.
+
+### Lo que este análisis todavía no prueba
+
+**Nada de esto describe clientes reales.** Los datos son simulados, y eso
+explica también por qué todo salió tan limpio: cuatro mezclas bien separadas
+producen bordes nítidos que una cartera real no tiene. Con datos verdaderos
+`min_samples` deja de tener un valor auditable contra la verdad y pasa a ser una
+decisión de negocio (cuál es el grupo más chico que vale la pena atender), y la
+partición hay que juzgarla por si los perfiles son accionables, no por un
+índice.
+
+**La reducción a 2D pudo haber ayudado de más.** UMAP optimiza la topología
+local y no las distancias, así que la separación del mapa no es proporcional a
+la disimilitud real y una proyección puede tanto fabricar grupos como
+disolverlos. Acá se verificó que no lo hizo. Con datos reales, esa verificación
+no existe.
+
+**Y todo lo anterior es descriptivo.** Los contrastes comparan promedios sin
+controlar por demografía ni por composición de cartera. Separar qué parte de la
+brecha nocturna viene del tipo de gasto y qué parte de quién gasta requiere un
+modelo, un logit fraccional sobre las participaciones, que es el paso
+siguiente.
+
+## El análisis completo
+
+Los notebooks tienen el código, los diagnósticos y las decisiones de
+implementación que esta página deja afuera. Cada uno se puede leer en el
+navegador o descargar y correr.
+
+- [**Paso 0 · Ver la base**](notebooks/00_exploracion_datos-preview.html):
+  perfil de las variables, composición por categoría y cobertura temporal.
+- [**Paso 1 · Contrastes conductuales**](notebooks/01_analisis-preview.html):
+  los tres marcadores que separan el gasto hedónico del utilitario, y por qué
+  el fraude se separa en vez de descartarse.
+- [**Paso 2 · Segmentación por densidad**](notebooks/02_densidad-preview.html):
+  construcción de la matriz, transformación CLR, embedding UMAP, calibración
+  de `eps` por curva de k-distancias, DBSCAN y análisis de atípicos.
+
+El pipeline completo corre de entrada con `python run_pipeline.py`: si no
+encuentra credenciales de Kaggle genera datos sintéticos con el mismo esquema,
+así que no hace falta configurar nada para reproducirlo.

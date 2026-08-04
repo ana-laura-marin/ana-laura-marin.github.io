@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#eff6ff"/>
+
+  <!-- Cuatro canastas de igual altura total y composicion distinta: la tesis
+       del proyecto es que el mismo gasto agregado esconde perfiles opuestos. -->
+  <g>
+    <rect x="70"  y="70"  width="80" height="80"  fill="#2563eb" opacity="0.85" rx="4"/>
+    <rect x="70"  y="152" width="80" height="58"  fill="#2563eb" opacity="0.55"/>
+    <rect x="70"  y="212" width="80" height="48"  fill="#2563eb" opacity="0.28"/>
+
+    <rect x="200" y="70"  width="80" height="45"  fill="#2563eb" opacity="0.85" rx="4"/>
+    <rect x="200" y="117" width="80" height="83"  fill="#2563eb" opacity="0.55"/>
+    <rect x="200" y="202" width="80" height="58"  fill="#2563eb" opacity="0.28"/>
+
+    <rect x="330" y="70"  width="80" height="110" fill="#2563eb" opacity="0.85" rx="4"/>
+    <rect x="330" y="182" width="80" height="38"  fill="#2563eb" opacity="0.55"/>
+    <rect x="330" y="222" width="80" height="38"  fill="#2563eb" opacity="0.28"/>
+
+    <rect x="460" y="70"  width="80" height="35"  fill="#2563eb" opacity="0.85" rx="4"/>
+    <rect x="460" y="107" width="80" height="53"  fill="#2563eb" opacity="0.55"/>
+    <rect x="460" y="162" width="80" height="98"  fill="#2563eb" opacity="0.28"/>
+  </g>
+
+  <line x1="40" y1="260" x2="570" y2="260" stroke="#94a3b8" stroke-width="2"/>
+
+  <text x="300" y="310" text-anchor="middle" fill="#1e40af" font-family="system-ui" font-size="16" font-weight="600">Composición del gasto con tarjeta · Econometría</text>
+</svg>
