@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#fff7ed"/>
+
+  <!-- El embudo del proyecto: la brecha contable aparente se reduce a un tercio
+       al exigirle tamano, y a un quinto al exigirle persistencia. -->
+  <g>
+    <rect x="60" y="66"  width="440" height="42" fill="#c2410c" opacity="0.26" rx="4"/>
+    <text x="510" y="93" fill="#7c2d12" font-family="system-ui" font-size="15" font-weight="600">2,19 M</text>
+
+    <rect x="60" y="126" width="197" height="42" fill="#c2410c" opacity="0.48" rx="4"/>
+    <text x="267" y="153" fill="#7c2d12" font-family="system-ui" font-size="15" font-weight="600">980 k</text>
+
+    <rect x="60" y="186" width="122" height="42" fill="#c2410c" opacity="0.88" rx="4"/>
+    <text x="192" y="213" fill="#7c2d12" font-family="system-ui" font-size="15" font-weight="600">606 k</text>
+  </g>
+
+  <text x="60" y="55" fill="#9a3412" font-family="system-ui" font-size="13">brecha aparente → con tamaño → persistente</text>
+
+  <line x1="60" y1="248" x2="540" y2="248" stroke="#fdba74" stroke-width="2"/>
+
+  <text x="300" y="300" text-anchor="middle" fill="#7c2d12" font-family="system-ui" font-size="17" font-weight="600">Benchmark competitivo · Oportunidad por plaza y familia</text>
+</svg>

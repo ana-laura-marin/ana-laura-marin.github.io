@@ -1,0 +1,287 @@
+---
+title: "Dónde está el ingreso que no se captura"
+description: "Una cadena sabe cuánto vende, pero no cuánto podría vender. Cómo construir una vara de medición competitiva, separar la brecha que se puede cerrar de la que no, ponerle precio, y ser honesta sobre cuánta de esa plata es real."
+author: "Ana Laura Marín Sánchez"
+date: "2026-09-16"
+categories: [Análisis Competitivo, Retail, Finanzas, Python, Datos Sintéticos]
+image: thumbnail.svg
+destacado: "true"
+# Borrador: queda fuera del listado de proyectos mientras se reconstruye el
+# analisis paso a paso. Sigue siendo accesible por su URL.
+draft: true
+toc: true
+toc-depth: 2
+execute:
+  enabled: false
+---
+
+Una cadena de supermercados con 54 tiendas sabe, al cierre de cada mes, exactamente
+cuánto vendió: por tienda, por familia de producto, por día. Lo que no sabe mirando
+solo sus propios números es **cuánto podría haber vendido**.
+
+La diferencia no es retórica. Una familia que crece 4 % al año se ve sana en el
+reporte de gerencia, y es un fracaso si la plaza donde opera creció 11 %. El dato
+propio no tiene con qué distinguir un caso del otro: para eso hace falta una vara de
+medición externa, y esa vara casi nunca viene incluida en los datos de la empresa.
+
+Este proyecto construye esa vara sobre las ventas reales de **Corporación Favorita**
+—54 tiendas en 22 ciudades de Ecuador, 33 familias de producto, de enero de 2013 a
+julio de 2017— y responde tres preguntas en orden: dónde hay brecha, cuánto vale
+cerrarla, y cuál de todas es de verdad atacable.
+
+::: {.callout-important}
+## El competidor es ficticio
+
+No existe un dataset público con las ventas de los competidores de Favorita. La
+cadena de referencia de este análisis, *Andina*, está **simulada**: se genera desde
+la estructura real del mercado —mismo calendario, misma estacionalidad, misma
+exposición al ciclo del consumo— y se aparta de ella en supuestos explícitos que
+viven en [un solo archivo de configuración](https://github.com/ana-laura-marin/ana-laura-marin.github.io/blob/main/proyectos/benchmark-retail/src/config.py):
+afinidad por familia, fuerza por plaza, y seis ventajas competitivas concretas
+sembradas a mano.
+
+Ningún número sobre Andina describe a una empresa real. Lo que el proyecto demuestra
+es el método —y, gracias a que el competidor es simulado, puede hacer algo que un
+análisis con datos reales no puede: **medir cuántas de las oportunidades que
+encuentra son verdaderas**, porque la respuesta correcta se conoce de antemano. Eso
+es la última sección, y es la parte más interesante.
+
+Los datos de Favorita sí son reales. La conversión de unidades a dólares no: el
+dataset no trae precios ni márgenes, y esos son supuestos míos.
+:::
+
+## El portafolio no pesa lo mismo en unidades que en dinero
+
+Antes de comparar contra nadie, conviene mirar qué se vende. Favorita mueve un
+volumen enorme y muy concentrado: **tres familias —abarrotes, bebidas y frutas y
+verduras— son el 63 % de las unidades**, y Quito solo concentra el 52 % del volumen
+de toda la cadena.
+
+Pero el volumen es una medida engañosa para decidir dónde poner esfuerzo comercial.
+
+{{< embed notebooks/00_mercado.ipynb#fig-concentracion >}}
+
+Abarrotes es el 32 % de las unidades y apenas el 19 % de la contribución bruta.
+Charcutería hace lo contrario: 2 % de las unidades, 8 % de la contribución. Carnes,
+3 % contra 7 %. El abarrote y la bebida son el tráfico —lo que hace que la gente
+entre— y el fresco y el no alimentario son el margen.
+
+Esa asimetría es la razón por la que todo el resto del análisis se valora en
+**contribución bruta** y no en unidades: una brecha de diez mil unidades en abarrotes
+y una de diez mil en charcutería no son el mismo problema de negocio.
+
+::: {.callout-note collapse="true"}
+## De unidades a dólares: el supuesto más frágil
+
+El dataset publica volumen, no dinero. Para hablar de ingreso hay que asignarle a
+cada familia un precio unitario promedio y un margen bruto, y ambos son supuestos
+declarados en `config.py` (abarrotes a USD 1,60 con 18 % de margen; carnes a USD 6,50
+con 18 %; charcutería a USD 5,00 con 35 %, y así para las 33 familias).
+
+Un chequeo de orden de magnitud: con esos precios, 2016 cierra en **USD 579 millones**
+para las 54 tiendas. Contra las transacciones que sí trae el dataset —585 mil por
+tienda al año— eso implica un **ticket promedio de USD 18**, plausible para un
+supermercado ecuatoriano. El supuesto no es arbitrario, pero tampoco es un dato: la
+sección de robustez lo somete a un análisis de sensibilidad.
+:::
+
+## La vara de medición
+
+Con el competidor de referencia construido, cada celda de plaza y familia tiene ahora
+un mercado —lo que venden las dos cadenas juntas— y una participación.
+
+{{< embed notebooks/00_mercado.ipynb#fig-share-familia >}}
+
+El patrón es coherente con lo que se esperaría de una cadena tradicional grande frente
+a un retador de frescos: Favorita domina el abarrote y la bebida (77 % y 76 %) y cede
+terreno donde el producto es perecedero y la relación con el proveedor local pesa más
+que la escala —frutas y verduras 33 %, carnes 35 %, aves 39 %.
+
+Y acá empieza el problema interesante. **Ese gráfico no es una lista de
+oportunidades.** Que Favorita tenga 33 % en frutas y verduras no significa que haya
+plata tirada en frutas y verduras: puede ser, simplemente, que ese sea un negocio
+difícil para una cadena de su tipo, en todas partes, por razones estructurales. Lo
+mismo con las plazas: tener poco share en Manta no es una oportunidad si Manta es
+una plaza difícil para todo el surtido.
+
+## Separar la brecha que se puede cerrar de la que no
+
+La pregunta accionable no es *¿dónde tengo poco share?* sino **¿dónde tengo menos
+share del que mi propia posición debería darme?**
+
+Para responderla, el share de cada celda se descompone en tres partes con un modelo
+aditivo en log-odds, ponderado por tamaño de mercado:
+
+$$
+\operatorname{logit}(\text{share}_{cf}) = \mu + \alpha_c + \beta_f + r_{cf}
+$$
+
+donde $\alpha_c$ captura qué tan fuerte es Favorita en esa plaza *en general*,
+$\beta_f$ qué tan fuerte es en esa familia *en todo el país*, y el residuo $r_{cf}$
+es lo que sobra: la celda que rinde distinto de lo que su plaza y su familia
+predicen. Ese residuo, y no el share, es el candidato a oportunidad.
+
+El modelo explica el 98,7 % de la varianza ponderada del share, lo que significa que
+casi todo lo que parece una brecha *es* efecto de plaza o de familia. Lo que queda es
+poco, y por eso es interesante.
+
+{{< embed notebooks/01_brechas.ipynb#fig-mapa-brechas >}}
+
+De las 699 celdas de plaza y familia, 180 tienen mercado suficiente para ser
+accionables (el resto no llega al 0,1 % del mercado total: son reales y son
+irrelevantes). Entre esas 180, el mapa muestra unas pocas celdas marcadamente rojas
+—Ambato en limpieza, Cuenca en lácteos, Guayaquil en licores— y un fondo de
+desviaciones pequeñas que podrían ser cualquier cosa.
+
+## Una brecha real no se despinta
+
+Un residuo negativo en una foto puede ser un mal trimestre. Lo que distingue a una
+posición competitiva deteriorada es que **persiste**.
+
+{{< embed notebooks/01_brechas.ipynb#fig-persistencia >}}
+
+La línea punteada es Quito en limpieza: una celda con USD 281 mil de brecha aparente,
+la más grande de todas en dinero, que cruza el cero cada pocos meses. No es una
+oportunidad; es ruido con un mercado grande detrás. Las líneas de color son las
+celdas que se quedan del lado negativo dos años seguidos.
+
+La prueba estadística detrás de esa distinción corrige por autocorrelación: los
+residuos mensuales están correlacionados consigo mismos, y un test ingenuo sobre la
+media declararía significativa casi cualquier celda. Con el tamaño de muestra
+ajustado por la autocorrelación de primer orden, la evidencia se vuelve mucho más
+exigente.
+
+## El embudo
+
+Puestos los tres criterios en fila —que haya brecha, que sea grande, que persista—
+la cifra inicial se desploma, y esa caída es el resultado principal del análisis.
+
+{{< embed notebooks/01_brechas.ipynb#fig-embudo >}}
+
+De **USD 2,19 millones** de brecha contable se pasa a **USD 606 mil** que resisten el
+escrutinio: el 72 % de la oportunidad aparente se evapora al exigirle tamaño y
+persistencia. Un reporte que se hubiera detenido en el primer paso habría prometido
+tres veces más plata de la que existe.
+
+::: {.callout-note}
+## Por qué el tamaño se mide en log-odds y no en puntos de share
+
+Un punto porcentual de share no vale lo mismo en todas partes. Donde Favorita tiene
+75 % del mercado, perder tres puntos es un deterioro mucho mayor que perder tres
+puntos donde tiene 35 %, porque en el primer caso significa que el competidor casi
+duplicó su posición. Medir la brecha en log-odds corrige eso: con un corte en puntos
+porcentuales, la oportunidad de Quito en cuidado personal —la segunda más grande, y
+una ventaja competitiva real— quedaba fuera de la lista.
+:::
+
+## Cuánto vale y cómo se ataca
+
+{{< embed notebooks/01_brechas.ipynb#fig-valor >}}
+
+Cuatro de las cinco celdas concentran casi todo el dinero, y la quinta —Quevedo en
+charcutería, USD 28 mil— entra por poco. La lista completa, con shares observados y
+esperados:
+
+{{< embed notebooks/01_brechas.ipynb#tbl-prioritarias >}}
+
+Falta la pregunta que convierte un diagnóstico en un plan: **¿con qué palanca se
+cierra cada una?** La única palanca que el dataset permite medir es la promocional,
+vía la respuesta del volumen a los ítems en promoción, con efectos fijos de tienda y
+de mes.
+
+{{< embed notebooks/01_brechas.ipynb#fig-elasticidad >}}
+
+Y el resultado es incómodo para la solución fácil. Las familias que responden a la
+promoción son las de compra impulsiva y perecedera —frutas y verduras con una
+elasticidad de 0,93, mariscos 0,48, aves 0,38, charcutería 0,34—, mientras que las
+cuatro oportunidades grandes viven en familias con elasticidades de 0,02 a 0,05:
+lácteos, limpieza, cuidado personal, licores. Son respuestas estadísticamente
+distintas de cero y económicamente inservibles.
+
+Dicho de otro modo: **de los USD 606 mil identificados, solo USD 28 mil se pueden
+atacar con promociones**. El otro 95 % vive en familias donde duplicar los ítems en
+promoción mueve el volumen menos de un 4 %, y donde por lo tanto la brecha tiene que
+venir de otra cosa —surtido, espacio en góndola, precio base, acuerdos de
+distribución—. Eso no se decide con este análisis, pero sí se descarta con él la
+intervención más barata y más común.
+
+::: {.callout-warning}
+## La elasticidad es una asociación, no un efecto causal
+
+Las promociones no se sortean: se deciden donde se espera que funcionen. Ese sesgo de
+selección empuja las elasticidades hacia arriba, de modo que los valores estimados
+deben leerse como un techo. Que familias enteras aparezcan con elasticidad cercana a
+cero *pese* a ese sesgo refuerza la conclusión, en lugar de debilitarla.
+:::
+
+## Qué tan firme es todo esto
+
+Acá es donde el competidor simulado deja de ser una limitación y se vuelve una
+herramienta: como las ventajas competitivas fueron sembradas a mano, se sabe cuáles
+son reales, y se puede medir el desempeño del método contra la verdad.
+
+### Si los precios estuvieran mal
+
+Cada familia recibe un error de precio independiente de hasta 30 %, cuatrocientas
+veces. El total se mueve entre **USD 490 mil y USD 728 mil** (p10–p90) alrededor de
+los USD 606 mil del caso base, y el orden de las cuatro primeras oportunidades no
+cambia. El supuesto de precios mueve la magnitud; no mueve la decisión.
+
+{{< embed notebooks/02_robustez.ipynb#tbl-sensibilidad >}}
+
+### Dónde poner el corte
+
+{{< embed notebooks/02_robustez.ipynb#fig-umbral >}}
+
+Con el corte laxo de 0,05 el método marca trece celdas y solo el 31 % son ventajas
+reales: el resto es ruido con buena presentación. Con el corte estricto de 0,30 todo
+lo que marca es real, pero deja fuera el 40 % de las oportunidades existentes. El
+corte elegido, 0,20, acierta en el 80 % y encuentra el 80 %.
+
+### Si se vuelve a sortear el mercado
+
+La prueba más dura: repetir el análisis completo quince veces, con las mismas ventajas
+sembradas y distinto ruido, y ver qué celdas sobreviven.
+
+{{< embed notebooks/02_robustez.ipynb#fig-semillas >}}
+
+Guayaquil en licores y Cuenca en lácteos aparecen en **las quince realizaciones**.
+Ambato en limpieza, en diez. Quito en cuidado personal, en seis. Y Quevedo en
+charcutería —que en la corrida principal figura como la quinta oportunidad— aparece
+en cuatro de quince, porque **no es una ventaja competitiva: es ruido que pasó los
+filtros**.
+
+En promedio, sobre las quince corridas, el método acierta en el 62 % de lo que marca
+y encuentra el 61 % de lo que existe.
+
+Ese número merece decirse sin adornos: **de cada tres oportunidades que este análisis
+señala, una es falsa**, y de cada tres que existen, se le escapa una. Es un resultado
+honesto y probablemente optimista respecto de lo que ocurriría con datos de mercado
+reales, que tienen más ruido y menos estructura que una simulación.
+
+## Qué se puede concluir
+
+1. **La brecha contable exagera por tres.** De USD 2,19 millones aparentes, USD 606
+   mil resisten los filtros de tamaño y persistencia. Cualquier plan construido sobre
+   la primera cifra promete plata que no existe.
+2. **Poco share no es lo mismo que oportunidad.** Descontar el efecto de plaza y el
+   efecto de familia deja apenas cinco celdas accionables de 180, y descarta como
+   ruido a la celda más grande en dinero del análisis.
+3. **La promoción no es la palanca.** El 95 % del dinero identificado vive en familias
+   que no responden a promociones. La intervención tiene que ser estructural.
+4. **Una sola corrida no distingue señal de ruido.** Solo las celdas que reaparecen en
+   todas las realizaciones —Guayaquil en licores, Cuenca en lácteos— justifican mover
+   presupuesto sin más evidencia. Para las demás, lo que corresponde es pedir un
+   período más de datos antes de actuar.
+
+Y un límite que el propio método marca: una de las ventajas sembradas —Machala en
+congelados— nunca fue detectada, porque su mercado quedó USD 12 mil por debajo del
+umbral de materialidad. Era real, era persistente, y el análisis la descartó por
+chica. Los umbrales no son neutrales: deciden qué se puede encontrar.
+
+---
+
+**Datos:** Store Sales — Time Series Forecasting, Corporación Favorita ·
+[Kaggle](https://www.kaggle.com/competitions/store-sales-time-series-forecasting/data).
+**Código:** el análisis completo se reproduce con `python run_pipeline.py`; el
+generador del competidor, los precios y los márgenes están en `src/config.py`.

@@ -10,9 +10,15 @@ Thumbs.db
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
-.venv/
+.venv*/
 # Nota: _freeze/ SÍ se sube a Git (contiene outputs congelados)
 # Nota: los .ipynb SÍ se suben (son el contenido del portafolio)
 
+# Datos generados por run_pipeline.py (Kaggle o sintéticos)
+proyectos/gasto-tarjetas/data/
+
 /.quarto/
 **/*.quarto_ipynb
+
+# Datos crudos y derivados del benchmark competitivo (se regeneran con run_pipeline.py)
+proyectos/benchmark-retail/data/
