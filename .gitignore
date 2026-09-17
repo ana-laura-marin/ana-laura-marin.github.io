@@ -19,6 +19,3 @@ proyectos/gasto-tarjetas/data/
 
 /.quarto/
 **/*.quarto_ipynb
-
-# Datos crudos y derivados del benchmark competitivo (se regeneran con run_pipeline.py)
-proyectos/benchmark-retail/data/
