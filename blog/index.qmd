@@ -1,7 +1,9 @@
 ---
 title: "Blog"
 listing:
-  contents: "*/index.*"
+  contents:
+    - "*/index.qmd"
+    - "*/index.ipynb"
   type: default
   sort: "date desc"
   categories: true
