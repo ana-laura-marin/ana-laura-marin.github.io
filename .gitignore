@@ -19,3 +19,6 @@ proyectos/gasto-tarjetas/data/
 
 /.quarto/
 **/*.quarto_ipynb
+
+# Configuración local de Claude Code
+.claude/

@@ -6,5 +6,5 @@
   <rect x="320" y="80" width="60" height="180" fill="#2563eb" opacity="0.7" rx="4"/>
   <rect x="410" y="150" width="60" height="110" fill="#2563eb" opacity="0.5" rx="4"/>
   <line x1="30" y1="260" x2="570" y2="260" stroke="#94a3b8" stroke-width="2"/>
-  <text x="300" y="310" text-anchor="middle" fill="#1e40af" font-family="system-ui" font-size="16" font-weight="600">Predicción de Churn · Machine Learning</text>
+  <text x="300" y="310" text-anchor="middle" fill="#1e40af" font-family="system-ui" font-size="16" font-weight="600">Costo de Capital con CAPM · Tesla</text>
 </svg>
