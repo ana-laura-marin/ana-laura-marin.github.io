@@ -1,0 +1,116 @@
+fila,columna,antes,despues,regla
+0,empresa,walmart ,Walmart,nombre canónico
+1,empresa,WALMART,Walmart,nombre canónico
+3,empresa,target corp.,Target,nombre canónico
+4,empresa,Target Corporation,Target,nombre canónico
+6,empresa,COSTCO WHOLESALE CORP /NEW,Costco,nombre canónico
+7,empresa,Costco Wholesale,Costco,nombre canónico
+9,empresa,Walmart Inc.,Walmart,nombre canónico
+11,empresa,Wal-Mart,Walmart,nombre canónico
+12,empresa,costco,Costco,nombre canónico
+13,empresa,TARGET CORP,Target,nombre canónico
+14,empresa,Target Corp,Target,nombre canónico
+15,empresa,Costco Wholesale Corp.,Costco,nombre canónico
+16,empresa,Costco Wholesale Corp.,Costco,nombre canónico
+0,cierre_fiscal,"Jan 31, 2025",2025-01-31,formato ISO
+1,cierre_fiscal,31/01/2023,2023-01-31,formato ISO
+2,cierre_fiscal,31/01/2026,2026-01-31,formato ISO
+3,cierre_fiscal,"Feb 01, 2025",2025-02-01,formato ISO
+5,cierre_fiscal,09/03/2023,2023-09-03,fecha ambigua resuelta por calendario fiscal
+6,cierre_fiscal,28/08/2022,2022-08-28,formato ISO
+8,cierre_fiscal,2026-01-31 00:00:00,2026-01-31,formato ISO
+10,cierre_fiscal,02/03/2024,2024-02-03,fecha ambigua resuelta por calendario fiscal
+11,cierre_fiscal,01/31/2024,2024-01-31,formato ISO
+12,cierre_fiscal,"Sep 01, 2024",2024-09-01,formato ISO
+13,cierre_fiscal,28/01/2023,2023-01-28,formato ISO
+14,cierre_fiscal,2026-01-31 00:00:00,2026-01-31,formato ISO
+15,cierre_fiscal,2025-08-31 00:00:00,2025-08-31,formato ISO
+16,cierre_fiscal,2025-08-31 00:00:00,2025-08-31,formato ISO
+0,ingresos,"$680,985",680985.0,texto a número
+1,ingresos,611289.0,611289.0,texto a número
+2,ingresos,"$104,780",104780.0,texto a número
+4,ingresos,"$106,005",106005.0,texto a número
+5,ingresos,242.290,242290.0,texto a número
+6,ingresos,"$226,954",226954.0,texto a número
+8,ingresos,713.163,713163.0,texto a número
+9,ingresos,572.754,572754.0,texto a número
+10,ingresos,107412.0,107412.0,texto a número
+11,ingresos,648.1,648.1,texto a número
+12,ingresos,254453.0,254453.0,texto a número
+13,ingresos,109.120,109120.0,texto a número
+14,ingresos,"$104,780",104780.0,texto a número
+0,utilidad_neta,"$19,436",19436.0,texto a número
+1,utilidad_neta,11680.0,11680.0,texto a número
+2,utilidad_neta,"$3,705",3705.0,texto a número
+4,utilidad_neta,"$6,946",6946.0,texto a número
+5,utilidad_neta,6.292,6292.0,texto a número
+6,utilidad_neta,"$5,844",5844.0,texto a número
+8,utilidad_neta,21.893,21893.0,texto a número
+9,utilidad_neta,13.673,13673.0,texto a número
+10,utilidad_neta,4138.0,4138.0,texto a número
+12,utilidad_neta,7367.0,7367.0,texto a número
+13,utilidad_neta,2.780,2780.0,texto a número
+14,utilidad_neta,"$3,705",3705.0,texto a número
+0,activos,"$260,823",260823.0,texto a número
+1,activos,243197.0,243197.0,texto a número
+2,activos,"$59,490",59490.0,texto a número
+4,activos,"$53,811",53811.0,texto a número
+5,activos,68.994,68994.0,texto a número
+6,activos,"$64,166",64166.0,texto a número
+8,activos,284.668,284668.0,texto a número
+9,activos,244.860,244860.0,texto a número
+10,activos,55356.0,55356.0,texto a número
+13,activos,53.335,53335.0,texto a número
+14,activos,"$59,490",59490.0,texto a número
+0,patrimonio,"$91,013",91013.0,texto a número
+1,patrimonio,76693.0,76693.0,texto a número
+2,patrimonio,"$16,165",16165.0,texto a número
+4,patrimonio,"$12,827",12827.0,texto a número
+5,patrimonio,25.058,25058.0,texto a número
+6,patrimonio,"$20,642",20642.0,texto a número
+8,patrimonio,99.617,99617.0,texto a número
+9,patrimonio,83.253,83253.0,texto a número
+10,patrimonio,13432.0,13432.0,texto a número
+12,patrimonio,23622.0,23622.0,texto a número
+13,patrimonio,11.232,11232.0,texto a número
+14,patrimonio,"$16,165",16165.0,texto a número
+0,activo_corriente,"$79,458",79458.0,texto a número
+1,activo_corriente,75655.0,75655.0,texto a número
+2,activo_corriente,"$20,005",20005.0,texto a número
+4,activo_corriente,"$21,573",21573.0,texto a número
+5,activo_corriente,35.879,35879.0,texto a número
+6,activo_corriente,"$32,696",32696.0,texto a número
+8,activo_corriente,84.874,84874.0,texto a número
+9,activo_corriente,81.070,81070.0,texto a número
+10,activo_corriente,,NaN,"faltante: se deja vacío, no se imputa"
+12,activo_corriente,34246.0,34246.0,texto a número
+13,activo_corriente,17.846,17846.0,texto a número
+14,activo_corriente,"$20,005",20005.0,texto a número
+0,pasivo_corriente,"$96,584",96584.0,texto a número
+1,pasivo_corriente,92198.0,92198.0,texto a número
+2,pasivo_corriente,"$21,230",21230.0,texto a número
+4,pasivo_corriente,"$21,747",21747.0,texto a número
+5,pasivo_corriente,33.583,33583.0,texto a número
+6,pasivo_corriente,-,NaN,"faltante: se deja vacío, no se imputa"
+8,pasivo_corriente,107.469,107469.0,texto a número
+9,pasivo_corriente,87.379,87379.0,texto a número
+10,pasivo_corriente,19304.0,19304.0,texto a número
+12,pasivo_corriente,35464.0,35464.0,texto a número
+13,pasivo_corriente,19.500,19500.0,texto a número
+14,pasivo_corriente,"$21,230",21230.0,texto a número
+0,pasivo_total,"$163,402",163402.0,texto a número
+1,pasivo_total,N/A,NaN,"faltante: se deja vacío, no se imputa"
+2,pasivo_total,"$43,325",43325.0,texto a número
+4,pasivo_total,"$40,984",40984.0,texto a número
+5,pasivo_total,43.936,43936.0,texto a número
+6,pasivo_total,"$43,519",43519.0,texto a número
+8,pasivo_total,178.781,178781.0,texto a número
+9,pasivo_total,152.969,152969.0,texto a número
+10,pasivo_total,41924.0,41924.0,texto a número
+12,pasivo_total,46209.0,46209.0,texto a número
+13,pasivo_total,42.103,42103.0,texto a número
+14,pasivo_total,"$43,325",43325.0,texto a número
+14,fila completa,,eliminada,duplicado de empresa y cierre
+16,fila completa,,eliminada,duplicado de empresa y cierre
+11,ingresos,648.1,648100.0,unidad corregida; la precisión perdida no se recupera: verificar en la fuente
+12,activos,698310.0,69831.0,"cero de más, confirmado por identidad contable"

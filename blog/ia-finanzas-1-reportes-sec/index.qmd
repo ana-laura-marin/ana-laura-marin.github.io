@@ -1,0 +1,286 @@
+---
+title: "Día 1 · De los reportes de la SEC a los indicadores de rentabilidad"
+description: "Descargamos los estados financieros de Walmart, Target y Costco desde la API pública de la SEC, calculamos cinco indicadores con ayuda de IA y los validamos contra el 10-K. El paso que la IA no hace sola: darse cuenta de que un dato está viejo."
+date: "2026-10-04"
+categories: [IA aplicada a finanzas, SEC, Python, Análisis financiero]
+resources:
+  - data/indicadores.csv
+  - data/datos_base.csv
+  - data/validacion_10k.csv
+  - notebooks/01_sec_indicadores.ipynb
+execute:
+  enabled: false
+---
+
+**Un asistente de IA escribe en minutos el código que baja los estados financieros de
+la SEC. Lo que no hace solo es notar que uno de los números tiene diez años de
+antigüedad.** Este primer día del [reto](../ia-finanzas-0-reto/index.qmd) construye un
+comparativo de rentabilidad de tres retailers estadounidenses y muestra dónde está ese
+punto ciego y cómo cubrirlo.
+
+::: {.callout-note icon=false}
+## 🎯 Objetivo del día
+
+Calcular margen neto, ROA, ROE, razón corriente y pasivo sobre patrimonio de Walmart,
+Target y Costco para sus últimos cinco años fiscales, con datos descargados de la fuente
+oficial y validados contra el documento original.
+:::
+
+## El problema financiero
+
+Walmart, Target y Costco venden prácticamente lo mismo, pero con modelos distintos:
+Walmart compite por precio y escala, Target por surtido y experiencia, y Costco cobra una
+membresía a cambio de márgenes mínimos. Los indicadores de rentabilidad permiten ver si
+esas diferencias de modelo se traducen en diferencias de resultado.
+
+Los cinco indicadores tienen sentido aquí porque son empresas comerciales. En un banco,
+la razón corriente no aplica (no separa activos corrientes) y el apalancamiento se lee
+con otra vara, por eso este reto evita el sector financiero.
+
+## Qué necesitas
+
+| Herramienta | Para qué | Alternativas |
+|---|---|---|
+| Python 3.10 o superior con `pandas`, `requests` y `matplotlib` | Descargar, calcular y graficar | Google Colab, sin instalar nada |
+| Un asistente de IA conversacional | Escribir y revisar código, interpretar | Claude, ChatGPT, Gemini o cualquier otro |
+| Navegador | Revisar el 10-K original | |
+
+No necesitas cuenta ni API key de la SEC. Sí necesitas identificarte: la SEC exige que
+cada solicitud automática declare un nombre y un correo de contacto en el encabezado
+`User-Agent`, y limita el acceso a 10 solicitudes por segundo
+([reglas de acceso de la SEC](https://www.sec.gov/os/accessing-edgar-data)).
+
+## Paso 1 · Dónde están los datos
+
+Desde 2009 (primero las más grandes) las empresas que cotizan en EE. UU. presentan sus estados financieros a la
+SEC en **XBRL**, un formato en el que cada cifra viaja con una etiqueta estándar
+(`Assets`, `NetIncomeLoss`, etc.) además del número. Eso permite leerlas con código en
+lugar de copiarlas del PDF.
+
+La SEC publica esos datos en su [API de EDGAR](https://www.sec.gov/search-filings/edgar-application-programming-interfaces),
+gratuita y sin registro. Dos direcciones bastan para este ejercicio:
+
+- `https://www.sec.gov/files/company_tickers.json` traduce el ticker bursátil (WMT) al
+  **CIK**, el número con que la SEC identifica a cada empresa.
+- `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json` devuelve todas las
+  cifras que la empresa ha reportado, con el CIK completado con ceros a 10 dígitos.
+
+## Paso 2 · Pedirle el código a la IA
+
+El resultado depende casi por completo del contexto que le des. Este es el prompt que
+escribiría alguien con prisa:
+
+```{.text filename="🤖 Prompt ingenuo"}
+Escribe un script en Python que descargue de la API de la SEC los ingresos y la
+utilidad neta de Walmart, Target y Costco y calcule el margen neto.
+```
+
+Funciona, en el sentido de que produce números. Este otro le da al asistente lo que
+necesita saber para no equivocarse:
+
+```{.text filename="🤖 Prompt con contexto"}
+Actúa como analista financiero que programa en Python. Necesito una función que
+extraiga series anuales desde el endpoint companyfacts de la API de EDGAR
+(https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json).
+
+Requisitos:
+1. Solo datos de formularios 10-K y 10-K/A, en la unidad USD.
+2. Para cuentas de flujo (ingresos, utilidad neta), quedarse solo con períodos de entre
+   350 y 380 días, para excluir trimestres y aceptar años fiscales de 53 semanas.
+3. Para cuentas de saldo (activos, patrimonio), no hay fecha de inicio.
+4. Si una misma fecha de cierre aparece en varios 10-K, quedarse con el presentado más
+   recientemente.
+5. Enviar un encabezado User-Agent con nombre y correo, leído de la variable de entorno
+   SEC_USER_AGENT, y esperar 0,2 segundos entre solicitudes.
+6. Devolver un DataFrame con fecha de cierre, valor, fecha de presentación y número de
+   acceso del documento.
+
+Antes del código, dime qué supuestos estás haciendo sobre la estructura del JSON.
+Comenta el código en español.
+```
+
+La última instrucción es la más útil: obliga al asistente a decir qué cree saber del
+JSON, y es más fácil corregir un supuesto equivocado antes de que se convierta en
+código.
+
+## Paso 3 · La trampa: el dato existe, pero está viejo
+
+Esto es lo que devuelve el enfoque ingenuo al pedir la etiqueta `Revenues` a las tres
+empresas:
+
+{{< embed notebooks/01_sec_indicadores.ipynb#tbl-trampa >}}
+
+Walmart y Costco llegan a su último cierre. **Target se
+queda en enero de 2015**: dejó de usar esa etiqueta y desde entonces reporta sus ventas
+como `RevenueFromContractWithCustomerExcludingAssessedTax`.
+
+El código no falla ni avisa. Devuelve 72.600 millones de dólares como ingresos de
+Target, que es la cifra de hace diez años. Cualquier margen calculado con ese número
+sale mal, y nada en el resultado lo delata salvo la fecha.
+
+::: {.callout-warning}
+## ⚠️ El error más peligroso es el que no da error
+
+Un script que falla te obliga a revisarlo. Uno que devuelve un número plausible no.
+Antes de usar cualquier serie descargada, revisa **hasta qué fecha llega** cada
+etiqueta en cada empresa.
+:::
+
+## Paso 4 · Elegir la etiqueta correcta para cada cuenta
+
+La solución es dar una lista de etiquetas candidatas por cuenta, en orden de
+preferencia, y quedarse con la primera **que llega al último cierre fiscal de la
+empresa**, no con la primera que existe.
+
+{{< embed notebooks/01_sec_indicadores.ipynb#tbl-mapa >}}
+
+Dos decisiones de esta tabla son de criterio financiero, no de programación:
+
+- **Ingresos de Walmart.** Walmart reporta dos etiquetas con montos distintos:
+  `Revenues` incluye las cuotas de membresía y otros ingresos, y la otra no. Se usa
+  `Revenues` porque es la que coincide con el "total revenues" del estado de resultados.
+- **Pasivo total.** Walmart y Target no reportan la etiqueta `Liabilities`. Se calcula
+  como pasivo más patrimonio menos patrimonio total. Costco sí la reporta, lo que
+  permite comprobar la fórmula en el paso 6.
+
+Para revisar estas elecciones, un segundo prompt sirve como auditor:
+
+```{.text filename="🤖 Prompt de auditoría"}
+Te paso la lista de etiquetas XBRL us-gaap que reporta [EMPRESA] con la fecha del
+último 10-K en que aparece cada una y su valor en ese año:
+
+[PEGAR TABLA: etiqueta | último cierre | valor]
+
+1. ¿Qué etiqueta corresponde a los ingresos totales que aparecen en el estado de
+   resultados? Explica la diferencia entre las candidatas.
+2. Señala cualquier etiqueta que haya dejado de reportarse antes del último cierre.
+3. No asumas valores que no estén en la tabla. Si necesitas ver el 10-K para
+   responder, dímelo en lugar de suponer.
+```
+
+## Paso 5 · Calcular los indicadores
+
+| Indicador | Fórmula | Qué mide |
+|---|---|---|
+| Margen neto | utilidad neta / ingresos | cuánto queda de cada dólar vendido |
+| ROA | utilidad neta / activos promedio | rentabilidad de todo lo que la empresa usa para operar |
+| ROE | utilidad neta / patrimonio promedio | rentabilidad del capital de los accionistas |
+| Razón corriente | activo corriente / pasivo corriente | holgura para pagar obligaciones de corto plazo |
+| Pasivo / patrimonio | pasivo total / patrimonio total | cuánto se financia con terceros por cada dólar propio |
+
+ROA y ROE usan el promedio del saldo inicial y final, porque la utilidad se genera
+durante todo el año. La utilidad neta es la atribuible a la controladora, así que el
+ROE se calcula contra el patrimonio de la controladora.
+
+{{< embed notebooks/01_sec_indicadores.ipynb#tbl-indicadores >}}
+
+::: {.callout-important}
+## Los años fiscales no coinciden
+
+Walmart y Target cierran a fines de enero y Costco a fines de agosto. Además, cada
+empresa nombra distinto el mismo período: el año que cerró en enero de 2026 es el
+"fiscal 2026" de Walmart y el "2025" de Target, según sus propios 10-K. Por eso el
+análisis identifica cada año por su **fecha de cierre** y no por su nombre.
+:::
+
+{{< embed notebooks/01_sec_indicadores.ipynb#fig-indicadores >}}
+
+## Paso 6 · Validar antes de creer
+
+Cuatro controles, tres automáticos y uno contra el documento original:
+
+{{< embed notebooks/01_sec_indicadores.ipynb#out-controles >}}
+
+Dentro de la ventana de análisis todo cuadra. Fuera de ella aparecen dos descuadres en
+2014, que no son errores de la SEC sino **cifras ajustadas hacia atrás**: un 10-K
+posterior volvió a presentar ese año con otro valor y la API guarda ambas versiones. En
+esos años, el activo sale del documento ajustado y el pasivo más patrimonio del
+original. No afecta este análisis, pero sí afectaría uno que use series largas.
+
+El último control descarga el 10-K más reciente de cada empresa y busca en el texto los
+ingresos y la utilidad neta, en millones, tal como aparecen en el estado de resultados:
+
+{{< embed notebooks/01_sec_indicadores.ipynb#tbl-validacion >}}
+
+Las seis cifras aparecen en los documentos originales. Ese es el estándar mínimo antes
+de publicar un número: que puedas señalar la página de donde salió.
+
+## Paso 7 · Interpretar, con la IA como segunda opinión
+
+Con la tabla validada, la IA sirve para ordenar la lectura, siempre que se le prohíba
+traer datos de afuera:
+
+```{.text filename="🤖 Prompt de interpretación"}
+Eres analista de crédito y renta variable. Te paso una tabla con cinco indicadores
+de Walmart, Target y Costco para sus últimos cinco años fiscales, calculados a
+partir de sus 10-K:
+
+[PEGAR indicadores.csv]
+
+1. Compara los modelos de negocio usando la descomposición ROA = margen neto ×
+   rotación de activos.
+2. Explica si una razón corriente menor a 1 es una señal de riesgo en este sector.
+3. Identifica el cambio más grande en la serie y di qué tendría que revisar en el 10-K
+   para explicarlo.
+
+Reglas: usa solo los datos de la tabla. Si una afirmación requiere información
+externa, márcala como "por verificar". No hagas recomendaciones de inversión.
+```
+
+Esta es mi lectura de los resultados, que conviene contrastar con la que te dé tu
+asistente:
+
+- **Costco gana con el margen más bajo.** Tiene el menor margen neto (2,9 %) y el mayor
+  ROA (11,0 %). Como el ROA es el margen por la rotación de activos, Costco vende
+  cerca de 3,7 veces sus activos al año, contra 2,6 de Walmart y 1,8 de Target. Su
+  modelo no es ganar por venta, es vender mucho con poco.
+- **Una razón corriente menor a 1 no es alarma en este sector.** Walmart (0,79) y
+  Target (0,94) venden el inventario antes de pagarle al proveedor, así que se
+  financian en parte con sus proveedores. En una empresa industrial, el mismo número
+  sí sería una señal para mirar.
+- **Target es la más apalancada y la más volátil.** Tiene el mayor pasivo sobre
+  patrimonio (2,68) y el quiebre más fuerte de la serie: su margen pasa de 6,6 % en el
+  cierre de enero de 2022 a 2,5 % un año después. Explicar ese quiebre es trabajo del
+  10-K de ese año, no de la IA.
+
+## Errores frecuentes y limitaciones
+
+- **Etiquetas que cambian.** Ya visto con Target. Revisa siempre la fecha máxima de
+  cada serie.
+- **Períodos mezclados.** Un 10-K trae cifras trimestrales y de años anteriores. Sin el
+  filtro de duración, la "utilidad anual" puede ser la de un trimestre.
+- **Años de 53 semanas.** Target tuvo uno en 2023, que según su 10-K aportó 1.700
+  millones de dólares de ventas. Compara crecimientos con esa salvedad.
+- **Pasivo total no es deuda financiera.** Incluye proveedores y arrendamientos. Para
+  medir solo deuda con costo hace falta otra definición, y las etiquetas de deuda son
+  todavía menos uniformes entre empresas.
+- **XBRL no reemplaza al 10-K.** Las notas, los ajustes y las explicaciones de la
+  gerencia solo están en el documento.
+
+## Cierre del día
+
+**Qué construimos.** Un pipeline que baja datos de la SEC, elige la etiqueta vigente
+de cada cuenta, calcula cinco indicadores para tres empresas y cinco años, y comprueba
+el resultado contra los 10-K.
+
+**Qué aprendimos.** La IA acelera la escritura del código y ordena la interpretación.
+La decisión de qué etiqueta representa los ingresos, cómo definir el pasivo y cómo
+comparar años fiscales desfasados es criterio financiero, y los errores de esas
+decisiones no dan error.
+
+::: {.callout-tip icon=false}
+## 📥 Archivos del día
+
+- [Notebook completo](notebooks/01_sec_indicadores-preview.html) (se puede ver en el
+  navegador o descargar y correr)
+- [`indicadores.csv`](data/indicadores.csv): cinco años de cuentas e indicadores por empresa
+- [`datos_base.csv`](data/datos_base.csv): cada cifra original con su etiqueta XBRL, fecha
+  de presentación y número de acceso de la SEC
+- [`validacion_10k.csv`](data/validacion_10k.csv): el cotejo contra los 10-K, con el
+  enlace a cada documento
+:::
+
+**Siguiente paso.** Los datos de hoy salieron limpios porque vienen de una API
+estructurada. En el [día 2](../ia-finanzas-2-limpieza/index.qmd) tomamos `datos_base.csv`, lo ensuciamos como se ve un archivo
+real armado a mano en Excel, y usamos IA para diagnosticarlo y limpiarlo sin perder el
+control.

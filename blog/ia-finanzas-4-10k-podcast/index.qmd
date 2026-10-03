@@ -1,0 +1,215 @@
+---
+title: "Día 4 · De un 10-K a un podcast: digerir documentos financieros con IA"
+description: "Usamos IA para leer el 10-K de Target y explicar por qué su margen cayó a menos de la mitad en un año, y lo convertimos en resumen, podcast y presentación. Antes de usar cualquiera, un verificador revisa cada cifra contra el documento."
+date: "2026-10-07"
+categories: [IA aplicada a finanzas, NotebookLM, SEC, Investigación]
+resources:
+  - data/resumen_ia.md
+  - data/fuente_item7_target_2022.txt
+  - data/verificacion_resumen.csv
+  - notebooks/04_verificar_resumen.ipynb
+execute:
+  enabled: false
+---
+
+**Un asistente de IA resume un 10-K de cien páginas en minutos y el resultado suena
+convincente. Esa es justamente la razón para no creerle sin revisar.** En el
+[día 1](../ia-finanzas-1-reportes-sec/index.qmd) quedó abierta una pregunta: por qué el
+margen neto de Target cayó de 6,6 % a 2,5 % en un año. Hoy usamos IA para encontrar la
+respuesta en el 10-K de ese año, la convertimos en resumen, podcast y presentación, y
+verificamos cada cifra con código antes de usar cualquiera de los tres.
+
+::: {.callout-note icon=false}
+## 🎯 Objetivo del día
+
+Convertir la sección de análisis de la gerencia (MD&A) de un 10-K en tres formatos
+fáciles de consumir, con un método para comprobar que la IA no inventó ni cambió ninguna
+cifra.
+:::
+
+## Qué documentos usar, y cuáles no
+
+La IA puede trabajar con casi cualquier texto, pero no todo texto se puede usar:
+
+| Tipo de documento | ¿Se puede usar? |
+|---|---|
+| Reportes presentados ante reguladores (10-K, 10-Q de la SEC) | Sí. Son documentos públicos, de acceso libre. |
+| Documentos de trabajo y notas de bancos centrales y organismos (Fed, FMI, BIS) | En general sí, pero revisa la licencia de cada uno. |
+| Artículos académicos de acceso abierto | Según su licencia; muchas permiten uso con atribución. |
+| Libros y artículos con derechos de autor | Para tu estudio personal, revisa las condiciones de la herramienta. No publiques podcasts ni resúmenes derivados sin permiso. |
+| Documentos confidenciales de tu trabajo | Solo con herramientas aprobadas por tu empresa. |
+
+Este ejercicio usa el 10-K de Target para el año fiscal cerrado el 28 de enero de 2023,
+descargado de la SEC.
+
+## Herramientas
+
+**NotebookLM** (Google) está pensado para este trabajo: cargas tus documentos como
+fuentes y sus respuestas se basan en ellos, con referencias a los fragmentos usados.
+Según la [ayuda de Google](https://support.google.com/notebooklm/answer/16215270?hl=en),
+acepta PDF, texto, Markdown, documentos de Google y páginas web, hasta 500.000 palabras
+por fuente. En parte de esa ayuda la herramienta ya aparece con el nombre *Gemini
+Notebook*.
+
+**Alternativa:** cualquier asistente que acepte archivos (Claude, ChatGPT, Gemini). El
+método de este post no depende de la herramienta; lo que cambia es el formato de audio,
+que es propio de NotebookLM.
+
+## Paso 1 · Conseguir la fuente y recortarla
+
+El notebook del día descarga el 10-K desde la SEC y extrae solo el **Item 7**, el
+análisis de la gerencia (*Management's Discussion and Analysis*, MD&A):
+
+{{< embed notebooks/04_verificar_resumen.ipynb#out-fuente >}}
+
+¿Por qué recortar si NotebookLM acepta el documento completo? Porque la pregunta es
+sobre resultados, y el Item 7 es donde la gerencia los explica. Menos texto irrelevante
+significa menos oportunidades de que la IA mezcle secciones. El archivo
+[`fuente_item7_target_2022.txt`](data/fuente_item7_target_2022.txt) es lo que se carga
+como fuente.
+
+## Paso 2 · El análisis
+
+```{.text filename="🤖 Prompt de análisis"}
+Usa solo el documento que te adjunto: el Item 7 (MD&A) del 10-K de Target para el año
+fiscal cerrado el 28 de enero de 2023.
+
+Explica por qué cayó la rentabilidad de Target en 2022 frente a 2021, para un analista
+financiero. Incluye:
+1. Las cifras principales: ingresos, utilidad operativa, utilidad neta y sus variaciones.
+2. Las causas que da la gerencia, en el orden en que las presenta.
+3. El contexto de negocio que explica esas causas.
+
+Reglas:
+- Cada cifra debe aparecer tal como está en el documento. Si calculas una cifra nueva,
+  márcala como "calculada" y muestra el cálculo.
+- No agregues información que no esté en el documento.
+- Responde en español, en menos de 300 palabras.
+```
+
+El resumen que produjo un asistente de IA (Claude) con instrucciones equivalentes está
+publicado completo en
+[`resumen_ia.md`](data/resumen_ia.md). Su respuesta a la pregunta del día 1 coincide con
+lo que dice el 10-K: el margen bruto cayó de 28,3 % a 23,6 % porque Target tuvo que
+rematar inventario de categorías discrecionales (ropa, hogar) cuando la demanda se movió
+hacia productos de consumo frecuente, en un año de costos de flete y mercancía altos.
+
+## Paso 3 · Verificar cada cifra
+
+Un resumen bien escrito no es un resumen correcto. El notebook incluye un verificador
+que extrae cada cifra del resumen (escrito en español), la convierte a un valor
+comparable y la busca en el 10-K (escrito en inglés). Tiene que entender que
+`8.600 millones` en el resumen es `$8.6 billion` en la fuente, y que `109.120 millones`
+es `109,120` en una tabla en millones:
+
+{{< embed notebooks/04_verificar_resumen.ipynb#tbl-verificacion >}}
+
+De 18 cifras, 16 aparecen en el documento. Las dos que no aparecen son el margen neto
+(6,6 % y 2,5 %), que el 10-K no publica: la IA lo calculó. Una cifra calculada no está
+mal por definición, pero hay que rehacer el cálculo con los datos de la fuente:
+
+{{< embed notebooks/04_verificar_resumen.ipynb#out-derivadas >}}
+
+El cálculo es correcto. Si no lo hubiera sido, este es el punto donde se habría
+detectado.
+
+::: {.callout-warning}
+## ⚠️ Lo que el verificador no revisa
+
+Comprueba que cada número exista en el documento, no que esté atribuido al concepto
+correcto. Si la IA hubiera escrito "la utilidad operativa cayó 60,0 %" (el porcentaje de
+la utilidad neta), el número existe y el verificador lo daría por bueno. Por eso muestra
+el fragmento donde lo encontró: la última lectura es humana.
+:::
+
+## Paso 4 · El podcast
+
+NotebookLM genera **resúmenes en audio** (*Audio Overviews*): una conversación entre dos
+voces sobre las fuentes cargadas. Según la [ayuda de Google](https://support.google.com/notebooklm/answer/16212820?hl=en),
+se puede elegir entre cuatro formatos (conversación a fondo, resumen breve, crítica y
+debate), generarlo en más de 80 idiomas y darle instrucciones sobre el enfoque. La
+opción de elegir la duración, según la misma ayuda, está disponible solo en inglés.
+
+```{.text filename="🤖 Instrucciones para el resumen en audio"}
+Audiencia: estudiantes de finanzas que conocen los estados financieros básicos.
+Enfoque: por qué cayó la rentabilidad de Target en 2022. Empieza por la cifra de la
+caída de la utilidad neta y luego explica el margen bruto, el inventario y el cambio
+en la demanda. Menciona solo cifras que estén en el documento. Termina con qué
+indicador conviene seguir en el año siguiente para saber si el problema se corrigió.
+Idioma: español.
+```
+
+Si usas otra herramienta, pídele un **guion** con el mismo enfoque y léelo o grábalo tú.
+
+::: {.callout-important}
+## El audio también se verifica
+
+Un podcast es más difícil de revisar que un texto porque no se puede buscar en él.
+Escúchalo con el resumen verificado al lado y anota cada cifra que mencione. Si la
+herramienta ofrece transcripción, pásala por el mismo verificador del paso 3.
+:::
+
+## Paso 5 · La presentación
+
+La forma más portable es pedir la estructura en Markdown, que se puede convertir en
+diapositivas con Quarto, Marp o pegar en Google Slides o PowerPoint:
+
+```{.text filename="🤖 Prompt para la presentación"}
+A partir del resumen verificado que te adjunto, crea una presentación de 6
+diapositivas en Markdown para un comité de inversión.
+
+Estructura: (1) la conclusión en una frase, (2) las cifras clave en una tabla,
+(3) la causa principal: el margen bruto, (4) el contexto: el cambio en la demanda,
+(5) qué hizo la gerencia, (6) qué indicadores seguir.
+
+Reglas: el título de cada diapositiva debe ser una afirmación, no un tema. Usa solo
+cifras del resumen. Máximo 4 viñetas por diapositiva.
+```
+
+Fíjate en el punto de partida: la presentación se construye sobre el **resumen ya
+verificado**, no sobre el 10-K. Así cada cifra de las diapositivas viene de un texto
+que ya pasó la revisión.
+
+## Lista de verificación antes de publicar
+
+- [ ] Cada cifra aparece en la fuente, o está marcada como calculada y recalculada.
+- [ ] Cada cifra está atribuida al concepto y al año correctos (lectura humana).
+- [ ] Las causas son las que da la gerencia, no las que la IA supone.
+- [ ] No hay información que no esté en el documento.
+- [ ] La fuente está citada con su enlace a la SEC.
+
+## Errores frecuentes y limitaciones
+
+- **La explicación es la de la gerencia.** El MD&A presenta los resultados desde el punto
+  de vista de la empresa. Un análisis completo lo contrasta con otras fuentes.
+- **Las cifras derivadas se cuelan.** La IA calcula variaciones y márgenes que suenan
+  oficiales. Márcalas y recalcúlalas.
+- **Mezcla de años.** En un 10-K conviven tres años de cifras; es fácil atribuir un
+  número al año equivocado.
+- **El formato de audio no se puede auditar con facilidad.** Úsalo para aprender, no
+  como fuente de cifras.
+
+## Cierre del día
+
+**Qué construimos.** Un flujo que va del 10-K oficial a un resumen, un podcast y una
+presentación, con un verificador automático de cifras y una lista de revisión.
+
+**Qué aprendimos.** La IA hace accesible un documento largo en minutos. Su aporte vale
+solo si cada cifra se puede rastrear hasta la fuente, y esa revisión se puede
+automatizar en parte, pero no del todo.
+
+::: {.callout-tip icon=false}
+## 📥 Archivos del día
+
+- [Notebook con el verificador](notebooks/04_verificar_resumen-preview.html)
+- [`fuente_item7_target_2022.txt`](data/fuente_item7_target_2022.txt): el Item 7 del
+  10-K, listo para cargar como fuente
+- [`resumen_ia.md`](data/resumen_ia.md): el resumen generado por IA
+- [`verificacion_resumen.csv`](data/verificacion_resumen.csv): el resultado del
+  verificador
+- [10-K original en la SEC](https://www.sec.gov/Archives/edgar/data/27419/000002741923000015/tgt-20230128.htm)
+:::
+
+**Siguiente paso.** En el [día 5](../ia-finanzas-5-dashboard/index.qmd) juntamos todo en un dashboard interactivo construido con
+un asistente de código, para que cualquiera pueda explorar los indicadores de los días 1
+y 2.

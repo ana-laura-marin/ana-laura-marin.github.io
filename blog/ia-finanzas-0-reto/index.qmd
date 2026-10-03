@@ -1,0 +1,101 @@
+---
+title: "IA aplicada a finanzas: un reto práctico de 5 días"
+description: "Cinco proyectos encadenados que llevan datos oficiales (SEC, Reserva Federal) hasta un dashboard publicado, usando IA en cada paso y validando cada resultado. Guía, prompts, código y datos para reproducirlo."
+date: "2026-10-03"
+categories: [IA aplicada a finanzas, Guías]
+---
+
+**La IA no reemplaza al analista financiero, pero sí cambia en qué ocupa su tiempo.**
+Lo que antes eran horas de copiar cifras, escribir código y limpiar archivos hoy se
+resuelve en minutos. Lo que no cambió es la parte que define si el análisis sirve:
+saber de dónde sale cada número, decidir qué significa y comprobar que esté bien.
+
+Este reto pone a prueba esa idea con cinco proyectos prácticos. Cada uno resuelve un
+problema financiero real, con datos públicos y oficiales, y usa IA donde aporta. Al
+final de los cinco días tendrás un pipeline completo, de la fuente oficial a una
+aplicación publicada, que además sirve como proyecto de portafolio.
+
+## Qué es y qué no es usar IA en finanzas
+
+| Sí | No |
+|---|---|
+| Escribir y depurar el código que descarga y procesa datos | Usar la IA como fuente de cifras financieras |
+| Diagnosticar problemas en un dataset desordenado | Aceptar una limpieza sin revisar qué se borró |
+| Resumir y reorganizar documentos largos que tú le das | Pedirle "los resultados de Walmart" sin darle el documento |
+| Ordenar una interpretación y señalar qué revisar | Delegarle la conclusión o la recomendación |
+
+La regla que sigue todo el reto: **las cifras salen siempre de un documento oficial o
+de un dataset público, nunca de la IA.** La IA trabaja sobre esos datos, y cada
+resultado se valida contra la fuente.
+
+## El reto, día por día
+
+Los cinco días están encadenados: lo que se construye un día alimenta al siguiente.
+
+| Día | Problema | Datos | Resultado |
+|---|---|---|---|
+| [1 · Reportes de la SEC a indicadores](../ia-finanzas-1-reportes-sec/index.qmd) | Comparar la rentabilidad de Walmart, Target y Costco | API de EDGAR (SEC) | Cinco indicadores, cinco años, validados contra el 10-K |
+| [2 · Limpieza de datos con IA](../ia-finanzas-2-limpieza/index.qmd) | Un archivo armado a mano da indicadores falsos | Los datos del día 1, ensuciados a propósito | Diagnóstico, código de limpieza y pruebas |
+| [3 · Morosidad y ciclo de crédito](../ia-finanzas-3-morosidad/index.qmd) | ¿En qué punto del ciclo de crédito estamos? | Reserva Federal, vía FRED | Serie histórica con recesiones e interpretación |
+| [4 · De un 10-K a un podcast](../ia-finanzas-4-10k-podcast/index.qmd) | Un 10-K tiene más de cien páginas | El 10-K del día 1 | Resumen, guion de podcast y presentación verificados |
+| [5 · Dashboard financiero](../ia-finanzas-5-dashboard/index.qmd) | Mostrar todo de forma interactiva | Los resultados de los días 1 y 2 | Aplicación publicada con su código |
+
+El cierre del día 5 compara los cinco proyectos: dónde aportó la IA, dónde hizo falta
+supervisión y qué dependió del criterio financiero.
+
+## Para quién es
+
+Para estudiantes y profesionales jóvenes de finanzas, economía, banca e inversiones que
+quieren incorporar IA a su trabajo sin perder rigor. No hace falta ser programador:
+
+- **Finanzas:** conviene saber leer un estado de resultados y un balance.
+- **Python:** basta con poder correr un notebook. El código viene completo y comentado,
+  y parte del reto es aprender a pedírselo a la IA.
+- **Inglés:** las fuentes oficiales están en inglés; los prompts y explicaciones, en
+  español.
+
+## Herramientas
+
+Cada día explica por qué usa cada herramienta y qué alternativas hay. La metodología
+no depende de ninguna en particular.
+
+| Herramienta | Días | Para qué | Alternativas |
+|---|---|---|---|
+| Python con pandas | 1, 2, 3, 5 | Descargar, limpiar y calcular | Google Colab si no quieres instalar nada |
+| Asistente de IA conversacional | Todos | Escribir código, diagnosticar, interpretar | Claude, ChatGPT, Gemini |
+| NotebookLM (Google) | 4 | Resúmenes, audio y presentaciones a partir de documentos | Cualquier asistente que acepte archivos |
+| Asistente de código en el editor | 5 | Construir la aplicación | Cursor, Claude Code, GitHub Copilot |
+| Streamlit | 5 | Convertir un script de Python en una aplicación web | Dash, Shiny para Python |
+
+::: {.callout-note}
+## Planes y precios
+
+Las herramientas de IA cambian de planes, límites y precios con frecuencia, así que
+esta guía no los cita. Revisa el plan vigente en el sitio oficial de cada una antes de
+empezar.
+:::
+
+## Cómo está organizado cada día
+
+Todos los días siguen la misma estructura, para que puedas saltar directo a lo que
+necesitas:
+
+1. **Objetivo** y problema financiero que resuelve.
+2. **Datos:** la fuente oficial, cómo encontrarla y cómo descargarla.
+3. **Paso a paso**, con los prompts listos para copiar y el código.
+4. **Validación:** cómo comprobar que el resultado es correcto.
+5. **Limitaciones** y errores frecuentes.
+6. **Archivos descargables** y siguiente paso.
+
+A lo largo del texto, los recuadros distinguen lo que es un hecho verificado, una
+recomendación y un ejemplo ilustrativo. Todos los números que aparecen en los
+resultados salen de ejecutar el código publicado.
+
+::: {.callout-warning}
+## Antes de empezar
+
+Nada en esta serie es una recomendación de inversión. Los análisis son ejercicios de
+método con datos públicos.
+:::
+
+**[Empezar por el día 1 →](../ia-finanzas-1-reportes-sec/index.qmd)**

@@ -1,0 +1,118 @@
+fila_origen,columna,tipo,valor_correcto,valor_sucio
+0,empresa,nombre inconsistente,Costco,Costco Wholesale
+1,empresa,nombre inconsistente,Costco,COSTCO WHOLESALE CORP /NEW
+1,cierre_fiscal,formato de fecha,2022-08-28,28/08/2022
+1,moneda,moneda inconsistente,USD,usd
+1,ingresos,número como texto,226954,"$226,954"
+1,utilidad_neta,número como texto,5844,"$5,844"
+1,activos,número como texto,64166,"$64,166"
+1,patrimonio,número como texto,20642,"$20,642"
+1,activo_corriente,número como texto,32696,"$32,696"
+1,pasivo_corriente,número como texto,31998,"$31,998"
+1,pasivo_total,número como texto,43519,"$43,519"
+2,cierre_fiscal,formato de fecha,2023-09-03,09/03/2023
+2,moneda,moneda inconsistente,USD,US$
+2,ingresos,número como texto,242290,242.290
+2,utilidad_neta,número como texto,6292,6.292
+2,activos,número como texto,68994,68.994
+2,patrimonio,número como texto,25058,25.058
+2,activo_corriente,número como texto,35879,35.879
+2,pasivo_corriente,número como texto,33583,33.583
+2,pasivo_total,número como texto,43936,43.936
+3,empresa,nombre inconsistente,Costco,costco
+3,cierre_fiscal,formato de fecha,2024-09-01,"Sep 01, 2024"
+3,moneda,moneda inconsistente,USD,Dólares
+3,ingresos,número como texto,254453,254453.0
+3,utilidad_neta,número como texto,7367,7367.0
+3,activos,número como texto,69831,69831.0
+3,patrimonio,número como texto,23622,23622.0
+3,activo_corriente,número como texto,34246,34246.0
+3,pasivo_corriente,número como texto,35464,35464.0
+3,pasivo_total,número como texto,46209,46209.0
+4,empresa,nombre inconsistente,Costco,Costco Wholesale Corp.
+4,cierre_fiscal,formato de fecha,2025-08-31,2025-08-31 00:00:00
+5,empresa,nombre inconsistente,Target,Target Corporation
+5,ingresos,número como texto,106005,"$106,005"
+5,utilidad_neta,número como texto,6946,"$6,946"
+5,activos,número como texto,53811,"$53,811"
+5,patrimonio,número como texto,12827,"$12,827"
+5,activo_corriente,número como texto,21573,"$21,573"
+5,pasivo_corriente,número como texto,21747,"$21,747"
+5,pasivo_total,número como texto,40984,"$40,984"
+6,empresa,nombre inconsistente,Target,TARGET CORP
+6,cierre_fiscal,formato de fecha,2023-01-28,28/01/2023
+6,moneda,moneda inconsistente,USD,usd
+6,ingresos,número como texto,109120,109.120
+6,utilidad_neta,número como texto,2780,2.780
+6,activos,número como texto,53335,53.335
+6,patrimonio,número como texto,11232,11.232
+6,activo_corriente,número como texto,17846,17.846
+6,pasivo_corriente,número como texto,19500,19.500
+6,pasivo_total,número como texto,42103,42.103
+7,cierre_fiscal,formato de fecha,2024-02-03,02/03/2024
+7,moneda,moneda inconsistente,USD,US$
+7,ingresos,número como texto,107412,107412.0
+7,utilidad_neta,número como texto,4138,4138.0
+7,activos,número como texto,55356,55356.0
+7,patrimonio,número como texto,13432,13432.0
+7,activo_corriente,número como texto,17498,17498.0
+7,pasivo_corriente,número como texto,19304,19304.0
+7,pasivo_total,número como texto,41924,41924.0
+8,empresa,nombre inconsistente,Target,target corp.
+8,cierre_fiscal,formato de fecha,2025-02-01,"Feb 01, 2025"
+8,moneda,moneda inconsistente,USD,Dólares
+9,empresa,nombre inconsistente,Target,Target Corp
+9,cierre_fiscal,formato de fecha,2026-01-31,2026-01-31 00:00:00
+9,ingresos,número como texto,104780,"$104,780"
+9,utilidad_neta,número como texto,3705,"$3,705"
+9,activos,número como texto,59490,"$59,490"
+9,patrimonio,número como texto,16165,"$16,165"
+9,activo_corriente,número como texto,20005,"$20,005"
+9,pasivo_corriente,número como texto,21230,"$21,230"
+9,pasivo_total,número como texto,43325,"$43,325"
+10,empresa,nombre inconsistente,Walmart,Walmart Inc.
+10,ingresos,número como texto,572754,572.754
+10,utilidad_neta,número como texto,13673,13.673
+10,activos,número como texto,244860,244.860
+10,patrimonio,número como texto,83253,83.253
+10,activo_corriente,número como texto,81070,81.070
+10,pasivo_corriente,número como texto,87379,87.379
+10,pasivo_total,número como texto,152969,152.969
+11,empresa,nombre inconsistente,Walmart,WALMART
+11,cierre_fiscal,formato de fecha,2023-01-31,31/01/2023
+11,moneda,moneda inconsistente,USD,usd
+11,ingresos,número como texto,611289,611289.0
+11,utilidad_neta,número como texto,11680,11680.0
+11,activos,número como texto,243197,243197.0
+11,patrimonio,número como texto,76693,76693.0
+11,activo_corriente,número como texto,75655,75655.0
+11,pasivo_corriente,número como texto,92198,92198.0
+11,pasivo_total,número como texto,159443,159443.0
+12,empresa,nombre inconsistente,Walmart,Wal-Mart
+12,cierre_fiscal,formato de fecha,2024-01-31,01/31/2024
+12,moneda,moneda inconsistente,USD,US$
+13,empresa,nombre inconsistente,Walmart,walmart 
+13,cierre_fiscal,formato de fecha,2025-01-31,"Jan 31, 2025"
+13,moneda,moneda inconsistente,USD,Dólares
+13,ingresos,número como texto,680985,"$680,985"
+13,utilidad_neta,número como texto,19436,"$19,436"
+13,activos,número como texto,260823,"$260,823"
+13,patrimonio,número como texto,91013,"$91,013"
+13,activo_corriente,número como texto,79458,"$79,458"
+13,pasivo_corriente,número como texto,96584,"$96,584"
+13,pasivo_total,número como texto,163402,"$163,402"
+14,cierre_fiscal,formato de fecha,2026-01-31,2026-01-31 00:00:00
+14,ingresos,número como texto,713163,713.163
+14,utilidad_neta,número como texto,21893,21.893
+14,activos,número como texto,284668,284.668
+14,patrimonio,número como texto,99617,99.617
+14,activo_corriente,número como texto,84874,84.874
+14,pasivo_corriente,número como texto,107469,107.469
+14,pasivo_total,número como texto,178781,178.781
+12,ingresos,unidad equivocada (miles de millones),648125,648.1
+3,activos,cero de más,69831.0,698310
+11,pasivo_total,valor faltante,159443.0,N/A
+7,activo_corriente,valor faltante,17498.0,
+1,pasivo_corriente,valor faltante,"$31,998",-
+4,fila completa,duplicado exacto,,
+9,fila completa,duplicado con otro formato,,

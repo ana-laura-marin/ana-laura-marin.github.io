@@ -1,0 +1,232 @@
+---
+title: "Día 2 · Limpiar datos financieros con IA sin perder el control"
+description: "Ensuciamos a propósito los datos del día 1 con 117 errores típicos de un archivo armado a mano y usamos IA para diagnosticarlos y limpiarlos. Los errores de formato son fáciles. Los peligrosos son los que dan números válidos."
+date: "2026-10-05"
+categories: [IA aplicada a finanzas, Limpieza de datos, Python]
+resources:
+  - data/estados_sucio.csv
+  - data/estados_limpio.csv
+  - data/registro_cambios.csv
+  - data/errores_sembrados.csv
+  - data/referencia_dia1.csv
+  - crear_dataset_sucio.py
+  - notebooks/02_limpieza.ipynb
+execute:
+  enabled: false
+---
+
+**La IA es muy buena para detectar y corregir errores de formato. Los errores que de
+verdad cuestan dinero son otros: los que producen números válidos.** Una cifra cargada
+en la unidad equivocada o con un cero de más pasa cualquier control de tipo de dato. En
+este segundo día del [reto](../ia-finanzas-0-reto/index.qmd) limpiamos un archivo
+financiero desordenado con ayuda de IA y medimos qué tan bien quedó, porque esta vez
+tenemos la clave de respuestas.
+
+::: {.callout-note icon=false}
+## 🎯 Objetivo del día
+
+Convertir un archivo con 117 errores sembrados en un dataset confiable, con un registro
+de cada cambio y una validación que demuestre que el resultado es correcto.
+:::
+
+## El problema financiero
+
+Los datos del [día 1](../ia-finanzas-1-reportes-sec/index.qmd) salieron limpios porque
+vienen de una API estructurada. En la práctica, muchos análisis arrancan de un Excel
+consolidado a mano por varias personas: cada una escribe los nombres a su manera, usa su
+formato de fecha y copia los montos como le salen. Un indicador calculado sobre ese
+archivo hereda todos sus errores.
+
+## Los datos: un archivo sucio con clave de respuestas
+
+El script [`crear_dataset_sucio.py`](crear_dataset_sucio.py) toma los datos del día 1 y
+siembra errores típicos de un archivo armado a mano. Cada error queda anotado en
+`errores_sembrados.csv`, así que al final podemos medir la limpieza celda por celda.
+Así se ven las primeras filas:
+
+{{< embed notebooks/02_limpieza.ipynb#tbl-crudo >}}
+
+Y estos son los errores sembrados, por tipo:
+
+{{< embed notebooks/02_limpieza.ipynb#tbl-sembrados >}}
+
+::: {.callout-important}
+## Por qué un dataset construido
+
+Un archivo sucio real no trae la lista de sus errores, y por eso no permite saber si la
+limpieza funcionó. Este sí: sirve para practicar y para comparar lo que hace tu
+asistente de IA con la respuesta correcta.
+:::
+
+## El flujo de trabajo
+
+| Etapa | Quién la hace | Resultado |
+|---|---|---|
+| 1. Perfil del archivo | Código | Un resumen de formas y valores por columna |
+| 2. Diagnóstico | IA, a partir del perfil | Lista de problemas y propuesta de reglas |
+| 3. Reglas de limpieza | Tú decides, la IA escribe el código | Funciones con registro de cambios |
+| 4. Validación | Código y criterio | Medición contra la referencia |
+
+## Paso 1 · Un perfil en lugar del archivo completo
+
+El primer impulso es pegar el archivo completo en el chat. Hay una forma mejor: generar
+un **perfil**, que reduce cada valor a su patrón (`$680,985` se convierte en
+`$999,999`) y cuenta cuántas formas distintas aparecen por columna.
+
+{{< embed notebooks/02_limpieza.ipynb#tbl-perfil >}}
+
+El perfil tiene dos ventajas. Muestra los problemas de un vistazo: la columna de
+ingresos tiene cinco formas de escribir un número. Y no expone los datos, algo que
+importa cuando el archivo es confidencial.
+
+::: {.callout-warning}
+## ⚠️ Privacidad
+
+Antes de pegar datos de tu trabajo en un asistente de IA, revisa la política de tu
+empresa y las condiciones del servicio sobre el uso de lo que le envías. Un perfil o una
+muestra anonimizada suelen bastar para el diagnóstico.
+:::
+
+## Paso 2 · Diagnóstico con IA
+
+```{.text filename="🤖 Prompt de diagnóstico"}
+Eres analista de datos financieros. Te paso el perfil de un CSV con estados financieros
+de Walmart, Target y Costco (montos en millones de USD), consolidado a mano por varias
+personas. Para cada columna verás los valores distintos, las "formas" de los valores
+(dígitos reemplazados por 9 y letras por a) y ejemplos.
+
+[PEGAR PERFIL]
+
+1. Lista cada problema de calidad que detectes, por columna.
+2. Para cada uno, propone una regla de limpieza y di si es segura o si requiere una
+   decisión humana.
+3. Señala los casos ambiguos: valores que admiten más de una interpretación.
+4. Señala qué errores NO se pueden detectar con este perfil.
+
+No escribas código todavía.
+```
+
+El punto 4 es el más importante. Un perfil revela errores de formato, pero un monto con
+un cero de más tiene la misma forma que uno correcto. Un buen asistente debería decírtelo;
+si no lo hace, ya sabes qué tan lejos llega su diagnóstico.
+
+## Paso 3 · De las reglas al código
+
+Con el diagnóstico revisado, se le pide el código con tres condiciones que no son
+negociables:
+
+```{.text filename="🤖 Prompt de limpieza"}
+Escribe funciones en Python (pandas) para limpiar el CSV según estas reglas:
+[PEGAR REGLAS APROBADAS]
+
+Condiciones:
+1. Lee todo como texto (dtype=str) para que nada se convierta sin revisión.
+2. Cada cambio se anota en una lista "registro" con fila, columna, valor anterior,
+   valor nuevo y regla aplicada.
+3. Si aparece un valor que ninguna regla cubre, el código se detiene con un error que
+   diga cuál es. Nunca adivines.
+4. No imputes valores faltantes: déjalos vacíos y regístralos.
+```
+
+La tercera condición es la diferencia entre un script que limpia y uno que esconde
+problemas. Estas son las decisiones que tomó el notebook y por qué:
+
+- **Nombres:** un diccionario explícito de variantes a nombre canónico, no una
+  coincidencia aproximada. Con pocas empresas se revisa a simple vista, y una
+  coincidencia aproximada puede confundir empresas de nombre parecido.
+- **Montos:** `242.290` es 242.290 millones, no 242 con decimales. La regla: un punto que
+  separa grupos de exactamente tres dígitos es separador de miles. Funciona porque las
+  cifras están en millones; con otros datos habría que revisarlo.
+- **Duplicados:** se buscan después de normalizar nombres y fechas, porque antes estaban
+  escondidos detrás de formatos distintos.
+
+{{< embed notebooks/02_limpieza.ipynb#out-dedup >}}
+
+### La fecha que ningún algoritmo puede resolver
+
+`09/03/2023` es 9 de marzo si se lee día/mes, o 3 de septiembre si se lee mes/día. Las
+dos son fechas válidas. Lo que la resuelve es el conocimiento del negocio: Costco cierra
+su año fiscal a fines de agosto o inicios de septiembre, nunca en marzo. El código
+prueba los formatos posibles y, si dos lecturas son válidas, elige la que cae en los
+meses de cierre de la empresa. El archivo tenía dos fechas así.
+
+::: {.callout-tip}
+## 💡 Consejo
+
+Cuando un asistente de IA resuelve una ambigüedad, pregúntale con qué criterio lo hizo.
+Si la respuesta es "el formato más común", el criterio es estadístico, no financiero.
+:::
+
+## Paso 4 · Los errores que dan números válidos
+
+Dos errores sembrados pasan cualquier control de formato: los ingresos de Walmart
+cargados en miles de millones (648,1 en lugar de 648.125) y un cero de más en los
+activos de Costco. Se detectan comparando cada valor con la mediana de esa cuenta para
+la misma empresa, y se corrigen solo si la corrección es inequívoca:
+
+{{< embed notebooks/02_limpieza.ipynb#out-escala >}}
+
+El cero de más se corrige solo porque la identidad contable lo confirma: dividido entre
+10, el activo vuelve a cuadrar con pasivo más patrimonio. Sin esa confirmación, el
+código lo habría marcado para revisión manual.
+
+## Paso 5 · Validar contra la verdad
+
+{{< embed notebooks/02_limpieza.ipynb#tbl-validacion >}}
+
+De 105 celdas de montos, 101 coinciden exactamente con la referencia. Las cuatro
+restantes son las que tenían que quedar así:
+
+- **Los tres faltantes**, que se dejaron vacíos a propósito.
+- **El ingreso en miles de millones.** Multiplicar por 1.000 corrige el orden de
+  magnitud, pero no recupera los dígitos que se perdieron al redondear: la cifra limpia
+  queda 25 millones por debajo de la real. El registro marca esa corrección para
+  verificarla en la fuente.
+
+### La imputación que parece lógica y no lo es
+
+¿Por qué no rellenar los faltantes? Para el pasivo total de Walmart sería tentador usar
+la identidad contable: activo menos patrimonio.
+
+{{< embed notebooks/02_limpieza.ipynb#out-imputacion >}}
+
+La diferencia de 7.061 millones es la **participación no controladora**: la parte del
+patrimonio de las filiales que pertenece a otros accionistas. La columna de patrimonio
+solo incluye el de la controladora, así que la identidad no cierra con ella. Es el tipo
+de imputación que un asistente de IA propondría con toda razón aparente, y que solo
+detecta alguien que sabe cómo está construido un balance.
+
+## Errores frecuentes y limitaciones
+
+- **Limpiar sin registro.** Si no queda anotado qué cambió, nadie puede auditar el
+  resultado, ni siquiera tú dentro de un mes.
+- **Corregir en silencio lo ambiguo.** Una fecha o una unidad mal interpretada no da
+  error y contamina todo lo que sigue.
+- **Imputar por defecto.** Un faltante visible es mejor que un número inventado con
+  apariencia de real.
+- **Esta validación es un lujo.** Aquí existe una referencia perfecta. En un archivo
+  real, los controles disponibles son la identidad contable, la coherencia entre años y
+  el cotejo contra la fuente original.
+
+## Cierre del día
+
+**Qué construimos.** Un flujo de limpieza que diagnostica a partir de un perfil, aplica
+reglas explícitas, registra 115 cambios y valida el resultado celda por celda.
+
+**Qué aprendimos.** La IA acelera el diagnóstico y la escritura del código. Las
+decisiones que importan (cómo leer una fecha ambigua, cuándo una corrección de escala es
+segura, por qué no imputar) dependen de saber cómo funcionan los estados financieros.
+
+::: {.callout-tip icon=false}
+## 📥 Archivos del día
+
+- [Notebook completo](notebooks/02_limpieza-preview.html)
+- [`estados_sucio.csv`](data/estados_sucio.csv): el archivo para practicar
+- [`errores_sembrados.csv`](data/errores_sembrados.csv): la clave de respuestas
+- [`estados_limpio.csv`](data/estados_limpio.csv): el resultado de la limpieza
+- [`registro_cambios.csv`](data/registro_cambios.csv): cada cambio con su regla
+- [`crear_dataset_sucio.py`](crear_dataset_sucio.py): el script que siembra los errores
+:::
+
+**Siguiente paso.** En el [día 3](../ia-finanzas-3-morosidad/index.qmd) salimos de las empresas y miramos el sistema: la
+morosidad de los créditos en los bancos de EE. UU., con datos de la Reserva Federal.

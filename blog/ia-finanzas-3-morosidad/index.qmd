@@ -1,0 +1,213 @@
+---
+title: "Día 3 · Morosidad: leer un ciclo de crédito con datos de la Reserva Federal"
+description: "Descargamos de FRED las tasas de morosidad de los bancos de EE. UU. desde 1991, las ubicamos en su historia y las cruzamos con las recesiones. La IA escribe el código; la definición del indicador se verifica en la fuente."
+date: "2026-10-06"
+categories: [IA aplicada a finanzas, Crédito, FRED, Python]
+resources:
+  - data/morosidad_fred.csv
+  - notebooks/03_morosidad.ipynb
+execute:
+  enabled: false
+---
+
+**La morosidad total de los bancos de EE. UU. está entre los niveles más bajos desde
+1991, pero el promedio esconde dos categorías que ya superan su nivel de antes de la
+pandemia: tarjetas de crédito e inmobiliario comercial.** En este tercer día del
+[reto](../ia-finanzas-0-reto/index.qmd) dejamos las empresas individuales y miramos el
+sistema con datos oficiales de la Reserva Federal. La IA hace el trabajo mecánico; la
+parte que no se le puede delegar es saber qué mide exactamente el indicador.
+
+::: {.callout-note icon=false}
+## 🎯 Objetivo del día
+
+Construir una lectura del ciclo de crédito con las tasas de morosidad por tipo de
+préstamo desde 1991: dónde está cada una frente a su historia, cómo se comportó en las
+recesiones y si anticipa las pérdidas.
+:::
+
+## El problema financiero
+
+La morosidad es el primer síntoma de deterioro del crédito: un préstamo primero se
+atrasa y, si no se recupera, termina castigado como pérdida. Seguirla por tipo de
+préstamo dice qué parte del crédito se está deteriorando y si el problema es general o
+está concentrado.
+
+## La fuente: la Reserva Federal, a través de FRED
+
+La Junta de la Reserva Federal publica cada trimestre las tasas de morosidad y de
+castigos de todos los bancos comerciales de EE. UU., calculadas a partir de los reportes
+regulatorios que presenta cada banco (*Call Reports*). Los datos salen unos 60 días
+después del cierre de cada trimestre.
+
+[FRED](https://fred.stlouisfed.org/release/tables?eid=148470&rid=231), la base de
+datos de la Reserva Federal de St. Louis, redistribuye esas series con un código por
+serie y permite descargarlas sin registro. Este análisis usa seis, todas
+desestacionalizadas:
+
+| Código | Categoría |
+|---|---|
+| [DRALACBS](https://fred.stlouisfed.org/series/DRALACBS) | Total de préstamos |
+| [DRCCLACBS](https://fred.stlouisfed.org/series/DRCCLACBS) | Tarjetas de crédito |
+| [DRCLACBS](https://fred.stlouisfed.org/series/DRCLACBS) | Consumo (total) |
+| [DRSFRMACBS](https://fred.stlouisfed.org/series/DRSFRMACBS) | Hipotecas residenciales |
+| [DRCRELEXFACBS](https://fred.stlouisfed.org/series/DRCRELEXFACBS) | Inmobiliario comercial |
+| [DRBLACBS](https://fred.stlouisfed.org/series/DRBLACBS) | Comerciales e industriales |
+
+Además: [CORCCACBS](https://fred.stlouisfed.org/series/CORCCACBS) (castigos netos de
+tarjetas) y [USREC](https://fred.stlouisfed.org/series/USREC) (indicador de recesión
+basado en las fechas del NBER).
+
+## Paso 1 · Verificar la definición antes de calcular nada
+
+Este es el paso que más fácil se salta y el que más importa. Si le preguntas a un
+asistente de IA qué es la "tasa de morosidad", te dará una definición razonable. Puede
+que sea la correcta para esta serie o puede que no: hay definiciones con 30, 60 o 90 días
+de atraso, con o sin préstamos en no devengo.
+
+La definición correcta está en la [página de la publicación de la Fed](https://www.federalreserve.gov/releases/chargeoff/):
+un préstamo está en mora si tiene **30 días o más de atraso y sigue devengando
+intereses, o si está en estado de no devengo** (*nonaccrual*). La tasa es el monto en
+mora de una categoría sobre el saldo total de esa categoría.
+
+```{.text filename="🤖 Prompt para contrastar la definición"}
+Te paso la definición oficial de morosidad que usa la Reserva Federal en su publicación
+"Charge-Off and Delinquency Rates on Loans and Leases at Commercial Banks":
+
+[PEGAR DEFINICIÓN DE LA PÁGINA DE LA FED]
+
+1. Explícala en lenguaje simple para un analista que empieza.
+2. ¿En qué se diferencia de la morosidad de más de 90 días que usan otros reguladores?
+3. ¿Qué tipo de deterioro del crédito NO captura esta medida?
+Responde solo a partir de la definición que te pasé; si algo requiere otra fuente,
+dilo.
+```
+
+::: {.callout-warning}
+## ⚠️ No compares morosidades con definiciones distintas
+
+Una tasa con umbral de 30 días no es comparable con una de 90 días. Antes de poner en el
+mismo gráfico datos de dos fuentes (por ejemplo, la Fed y un regulador de otro país),
+verifica que midan lo mismo.
+:::
+
+## Paso 2 · Descargar con código escrito por la IA
+
+```{.text filename="🤖 Prompt de descarga"}
+Escribe una función en Python que descargue series de FRED en formato CSV desde
+https://fred.stlouisfed.org/graph/fredgraph.csv?id=SERIE usando requests y pandas.
+Debe recibir el código de la serie y devolver una Serie de pandas con fecha como
+índice. Luego descarga estas series y únelas en un DataFrame desde 1991:
+DRALACBS, DRCCLACBS, DRCLACBS, DRSFRMACBS, DRCRELEXFACBS, DRBLACBS.
+Guarda el resultado en un CSV con una columna adicional con la fecha de descarga.
+```
+
+Dos detalles prácticos que encontré al hacerlo:
+
+- **La fecha de descarga importa.** La Fed revisa trimestres ya publicados. La
+  morosidad de tarjetas del primer trimestre de 2026 figuraba en 2,92 % en la versión de
+  junio y en 2,91 % en la de septiembre, según
+  [ALFRED](https://alfred.stlouisfed.org/series?seid=DRCCLACBS), el archivo de versiones
+  de FRED. Guardar la fecha de descarga permite saber con qué versión se hizo el
+  análisis.
+- **FRED fecha cada trimestre en su primer día.** La observación `2026-04-01` es el
+  segundo trimestre de 2026, no el mes de abril.
+
+## Paso 3 · Dónde está cada categoría frente a su historia
+
+{{< embed notebooks/03_morosidad.ipynb#tbl-resumen >}}
+
+El percentil histórico indica qué fracción de los trimestres desde 1991 tuvo una tasa
+menor que la actual. Tres lecturas, todas a partir de la tabla:
+
+- **El total está bajo.** 1,42 %, igual que antes de la pandemia y por debajo del 92 %
+  de los trimestres desde 1991.
+- **Tarjetas está por encima de su nivel prepandemia.** 2,85 % frente a 2,61 % a fines
+  de 2019, aunque todavía bajo su promedio histórico (3,69 %).
+- **Inmobiliario comercial más que duplicó su nivel prepandemia.** 1,53 % frente a
+  0,67 %. Sigue lejos de sus máximos, pero es el cambio relativo más grande de la tabla.
+
+{{< embed notebooks/03_morosidad.ipynb#fig-tarjetas >}}
+
+El gráfico muestra la forma del último ciclo de tarjetas: la morosidad cayó a un mínimo
+de 1,53 % en el tercer trimestre de 2021, subió hasta 3,22 % en el segundo trimestre de
+2024 y desde entonces baja lentamente. Las tasas de 2008 a 2010 son la referencia de lo
+que es una crisis de crédito: 6,77 % en tarjetas y 7,35 % en el total.
+
+{{< embed notebooks/03_morosidad.ipynb#fig-categorias >}}
+
+Cada tipo de préstamo tiene su propio ciclo. Las hipotecas dominaron la crisis de 2008;
+el crédito comercial e inmobiliario comercial, la de principios de los noventa. Por eso
+un indicador agregado puede verse tranquilo mientras una categoría se deteriora.
+
+## Paso 4 · ¿La mora anticipa las pérdidas?
+
+Si la mora es el primer síntoma, debería adelantarse a los castigos. El notebook compara
+la morosidad de tarjetas con los castigos de tarjetas desplazados entre 0 y 4
+trimestres:
+
+{{< embed notebooks/03_morosidad.ipynb#out-rezago >}}
+
+{{< embed notebooks/03_morosidad.ipynb#fig-castigos >}}
+
+La correlación es más alta con un rezago de dos trimestres, lo que es consistente con la
+secuencia atraso, deterioro y castigo. Pero hay que leerlo con cuidado: la diferencia
+entre rezagos es chica (0,75 a 0,81), y la correlación entre dos series con tendencia
+siempre es alta. Es un indicio coherente con la teoría, no una prueba.
+
+## Paso 5 · Interpretar con la IA, sin dejar que invente el contexto
+
+```{.text filename="🤖 Prompt de interpretación"}
+Eres economista especializado en crédito bancario. Te paso un resumen de las tasas de
+morosidad de los bancos comerciales de EE. UU. (Reserva Federal, desestacionalizadas)
+con el último valor, el promedio desde 1991, el valor de 2019T4 y el percentil
+histórico de cada categoría:
+
+[PEGAR TABLA]
+
+1. Resume en tres frases el estado del ciclo de crédito.
+2. ¿Qué categorías merecen seguimiento y por qué?
+3. Lista qué datos adicionales necesitarías para explicar las causas.
+
+Reglas: distingue entre lo que dicen los datos y tus hipótesis. Marca cada hipótesis
+como tal. No cites cifras que no estén en la tabla.
+```
+
+La tercera pregunta es la útil. Las causas (tasas de interés, ahorro de los hogares,
+vacancia de oficinas) no están en esta tabla, y un asistente que las afirme como hechos
+está completando con su memoria, no con datos. Si te interesa una hipótesis, el paso
+siguiente es buscar la serie que la pruebe.
+
+## Errores frecuentes y limitaciones
+
+- **Es un promedio de todos los bancos.** No dice nada de un banco en particular ni de
+  la banca no regulada (fintechs, prestamistas no bancarios).
+- **Mide préstamos en balance.** Los créditos vendidos o titularizados salen del
+  indicador.
+- **Mora no es pérdida.** Una parte de los préstamos en mora se recupera. Para pérdidas
+  hay que mirar los castigos.
+- **Los datos se revisan.** Un análisis reproducible guarda la fecha de descarga.
+- **Desestacionalizado no es lo mismo que original.** Para comparar con otras fuentes,
+  verifica cuál versión usan; FRED publica ambas.
+
+## Cierre del día
+
+**Qué construimos.** Un análisis del ciclo de crédito de EE. UU. desde 1991, con seis
+categorías de préstamo, recesiones y la relación entre mora y castigos, reproducible
+con un solo notebook.
+
+**Qué aprendimos.** La IA escribe en minutos el código de descarga y ordena la lectura
+de los datos. La definición del indicador hay que verificarla en la fuente, y separar
+datos de hipótesis es responsabilidad del analista.
+
+::: {.callout-tip icon=false}
+## 📥 Archivos del día
+
+- [Notebook completo](notebooks/03_morosidad-preview.html)
+- [`morosidad_fred.csv`](data/morosidad_fred.csv): las series usadas, con la fecha de
+  descarga
+:::
+
+**Siguiente paso.** En el [día 1](../ia-finanzas-1-reportes-sec/index.qmd) quedó una
+pregunta abierta: por qué el margen de Target cayó de 6,6 % a 2,5 % en un año. En el
+[día 4](../ia-finanzas-4-10k-podcast/index.qmd) usamos IA para leer el 10-K de ese año y buscar la respuesta, verificando cada cifra
+que nos devuelva.

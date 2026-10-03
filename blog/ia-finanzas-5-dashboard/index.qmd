@@ -1,0 +1,280 @@
+---
+title: "Día 5 · Un dashboard financiero construido con un asistente de código"
+description: "Juntamos los datos del reto en una aplicación de Streamlit construida con ayuda de un asistente de código, la probamos en local y explicamos cómo publicarla. Cierre del reto: dónde aporta la IA en finanzas y dónde no se le puede delegar nada."
+date: "2026-10-08"
+categories: [IA aplicada a finanzas, Streamlit, Python, Dashboards]
+resources:
+  - app/app.py
+  - app/requirements.txt
+  - app/AGENTS.md
+  - app/README.md
+  - app/data/indicadores.csv
+  - app/data/morosidad_fred.csv
+---
+
+**Un asistente de código puede escribir un dashboard completo en una tarde. Lo que no
+puede es decidir qué tiene que mostrar ni darse cuenta de que usa una función que ya no
+existe.** En este último día del [reto](../ia-finanzas-0-reto/index.qmd) juntamos los
+indicadores del [día 1](../ia-finanzas-1-reportes-sec/index.qmd) y la morosidad del
+[día 3](../ia-finanzas-3-morosidad/index.qmd) en una aplicación interactiva, y cerramos
+con lo que dejaron los cinco días.
+
+::: {.callout-note icon=false}
+## 🎯 Objetivo del día
+
+Construir una aplicación web con los resultados del reto, que cualquiera pueda correr en
+su computadora o abrir en el navegador si la publicas.
+:::
+
+## Qué vamos a construir
+
+Una aplicación con tres pestañas:
+
+1. **Retailers:** el último valor de cada indicador por empresa, su cambio frente al año
+   anterior y la serie histórica, con filtros y descarga de datos.
+2. **Morosidad bancaria:** las categorías de préstamo que elijas desde 1991, con un
+   resumen de dónde está cada una frente a su historia.
+3. **Interpretación asistida:** un prompt armado con los datos actuales, listo para
+   copiar en el asistente que uses.
+
+## Herramientas
+
+| Herramienta | Para qué | Alternativas |
+|---|---|---|
+| [Streamlit](https://docs.streamlit.io/) | Convertir un script de Python en una aplicación web, sin saber HTML | Dash, Shiny para Python |
+| [Plotly](https://plotly.com/python/) | Gráficos interactivos (zoom, información al pasar el cursor) | Altair, los gráficos nativos de Streamlit |
+| [Cursor](https://cursor.com/docs) | Editor con un agente que escribe y modifica código en tu proyecto | Claude Code, GitHub Copilot |
+
+Cursor es un editor de código con IA integrada: su agente lee los archivos del
+proyecto, propone cambios y los aplica. Lo importante para este ejercicio es que
+respeta **instrucciones del proyecto**: según su
+[documentación](https://cursor.com/docs/context/rules), lee reglas desde la carpeta
+`.cursor/rules` o desde un archivo `AGENTS.md`. Ese archivo también lo entienden otros
+asistentes, así que el método no depende de Cursor.
+
+## Paso 1 · La estructura del proyecto
+
+```text
+app/
+├── app.py             la aplicación
+├── requirements.txt   dependencias: streamlit, pandas, plotly
+├── AGENTS.md          instrucciones para el asistente de código
+├── README.md          cómo correrla
+└── data/
+    ├── indicadores.csv     del día 1
+    └── morosidad_fred.csv  del día 3
+```
+
+## Paso 2 · Darle reglas al asistente antes de pedirle código
+
+El error más común con un asistente de código es pedirle la aplicación directamente.
+Primero conviene escribir las reglas del proyecto en
+[`AGENTS.md`](app/AGENTS.md): qué datos hay y en qué unidades, que son de solo lectura,
+cómo se construyen las rutas, en qué idioma va la interfaz. El asistente las lee en cada
+pedido, y no hay que repetirlas.
+
+Dos reglas de ese archivo salieron de errores reales, más abajo se explica cuáles.
+
+## Paso 3 · Pedir la aplicación
+
+La aplicación de este post la escribió un asistente de código (Claude Code) a partir de
+instrucciones equivalentes a las de abajo. Los prompts están escritos para que los
+reproduzcas en Cursor o en cualquier otro asistente.
+
+```{.text filename="🤖 Prompt inicial para el asistente de código"}
+Lee AGENTS.md y los dos CSV de la carpeta data/. Crea app.py, una aplicación de
+Streamlit con tres pestañas:
+
+1. "Retailers": selector de empresas y de indicador (margen neto, ROA, ROE, razón
+   corriente, pasivo/patrimonio). Una tarjeta st.metric por empresa con el último valor
+   y el cambio frente al año anterior (en puntos porcentuales para los ratios en %).
+   Un gráfico de líneas con plotly con la fecha de cierre fiscal real en el eje x.
+   Un expander con la tabla y un botón para descargarla en CSV.
+2. "Morosidad bancaria": selector de categorías, gráfico histórico y una tabla con el
+   último valor, el promedio desde 1991 y el percentil histórico.
+3. "Interpretación asistida": un prompt con los últimos indicadores para copiar.
+
+Usa st.cache_data para cargar los datos. Antes de escribir el código, dime qué
+columnas encontraste en cada CSV y en qué unidades crees que están.
+```
+
+Igual que en el día 1, la última instrucción obliga al asistente a mostrar sus
+supuestos. Si cree que `0.031` es 0,031 % y no 3,1 %, es el momento de corregirlo.
+
+Después vienen los ajustes, uno por pedido:
+
+```{.text filename="🤖 Prompts de ajuste"}
+El eje x muestra los meses en inglés ("Jan 2022"). Muestra solo el año.
+
+Los cambios en las tarjetas usan punto decimal. Usa coma, como el resto de la app.
+
+Agrega debajo de cada gráfico la fuente de los datos en un st.caption.
+```
+
+## Paso 4 · Correrla en tu computadora
+
+Desde la raíz del repositorio:
+
+```bash
+pip install -r blog/ia-finanzas-5-dashboard/app/requirements.txt
+```
+
+```bash
+streamlit run blog/ia-finanzas-5-dashboard/app/app.py
+```
+
+La aplicación se abre en `http://localhost:8501`. Así carga los datos, de forma que
+funcione desde cualquier carpeta:
+
+```python
+from pathlib import Path
+
+# Las rutas se resuelven desde este archivo: funciona igual en local y en Community Cloud
+DATA = Path(__file__).parent / "data"
+
+@st.cache_data
+def cargar_empresas():
+    df = pd.read_csv(DATA / "indicadores.csv", parse_dates=["cierre_fiscal"])
+    return df.sort_values(["empresa", "cierre_fiscal"])
+```
+
+### Lo que apareció al probarla
+
+La primera versión funcionaba, pero la consola de Streamlit mostraba una advertencia en
+cada gráfico: el parámetro `use_container_width` está obsoleto en la versión actual
+(1.65) y hay que reemplazarlo por `width="stretch"`.
+
+Es el tipo de error característico de los asistentes de código: aprenden de mucho código
+escrito con versiones anteriores de las librerías, y lo reproducen. El código funciona
+hoy y deja de funcionar cuando la librería elimine el parámetro. Por eso `AGENTS.md`
+pide revisar la documentación vigente y confirmar que no haya advertencias en la
+consola antes de dar un cambio por terminado.
+
+::: {.callout-warning}
+## ⚠️ Lee la consola, no solo la pantalla
+
+Que la aplicación se vea bien no significa que esté bien. Las advertencias de la
+consola avisan de lo que va a fallar en la próxima actualización.
+:::
+
+## Paso 5 · Personalizarla
+
+Algunas extensiones naturales, cada una un buen pedido para el asistente:
+
+- Agregar una cuarta empresa: hay que correr de nuevo el notebook del día 1 con su
+  ticker, y revisar sus etiquetas XBRL como se explicó ese día.
+- Agregar la descomposición del ROA en margen por rotación de activos.
+- Marcar las recesiones en el gráfico de morosidad, como en el día 3.
+
+## Paso 6 · Publicarla
+
+[Streamlit Community Cloud](https://docs.streamlit.io/deploy/streamlit-community-cloud)
+publica aplicaciones directamente desde un repositorio de GitHub. Según su
+documentación:
+
+- Necesitas una cuenta de Community Cloud conectada a tu GitHub.
+- Al crear la aplicación eliges el repositorio, la rama y la ruta del archivo
+  principal, en este caso `blog/ia-finanzas-5-dashboard/app/app.py`.
+- El archivo `requirements.txt` puede estar en la raíz del repositorio o junto al
+  archivo principal.
+- **El directorio de trabajo es siempre la raíz del repositorio.** Por eso la app
+  construye sus rutas desde `__file__`: una ruta relativa como `data/indicadores.csv`
+  funcionaría en local y fallaría al publicarla.
+
+::: {.callout-note}
+## Condiciones del servicio
+
+Revisa en el sitio de Streamlit las condiciones vigentes de Community Cloud (planes,
+límites de recursos, comportamiento de las apps sin uso) antes de publicar.
+:::
+
+Si no quieres publicarla, cualquier lector puede probarla clonando el repositorio y
+siguiendo el paso 4.
+
+## Sobre la pestaña de interpretación
+
+La aplicación **no llama a ningún modelo de IA**. Arma un prompt con los datos que estás
+viendo y lo muestra para copiarlo. Es una decisión de diseño: una llamada a una API
+desde la aplicación exigiría una clave, que no puede quedar en un repositorio público, y
+haría que la interpretación pareciera parte de los datos. Así queda claro que es una
+lectura asistida, que se verifica, y no un resultado.
+
+## Cierre del día
+
+**Qué construimos.** Una aplicación con los resultados del reto, reglas para el
+asistente de código y las instrucciones para correrla y publicarla.
+
+**Qué aprendimos.** El asistente de código escribió la aplicación y resolvió cada ajuste
+en segundos. Las decisiones de qué mostrar, cómo etiquetar los años fiscales y qué no
+automatizar fueron nuestras, y el único error real que cometió (un parámetro obsoleto)
+solo apareció al leer la consola.
+
+::: {.callout-tip icon=false}
+## 📥 Archivos del día
+
+- [`app.py`](app/app.py): la aplicación
+- [`requirements.txt`](app/requirements.txt): dependencias
+- [`AGENTS.md`](app/AGENTS.md): las reglas para el asistente de código
+- [`README.md`](app/README.md): instrucciones para correrla
+:::
+
+## Conclusiones del reto
+
+**En los cinco días, la IA hizo rápido todo lo que era mecánico. Cada error que importaba
+(un dato viejo, una fecha ambigua, una imputación lógica pero falsa, una cifra
+calculada, un parámetro obsoleto) lo detectó una validación diseñada con criterio
+financiero.**
+
+| Día | Dónde aportó la IA | Qué requirió supervisión | Qué dependió del criterio financiero |
+|---|---|---|---|
+| 1 · SEC | Escribir el código de la API e interpretar ratios | La etiqueta de ingresos de Target, vieja de diez años | Definir pasivo total y comparar años fiscales desfasados |
+| 2 · Limpieza | Diagnosticar a partir del perfil y escribir las reglas | Fechas ambiguas y errores de escala | No imputar: la identidad contable fallaba por 7.061 millones |
+| 3 · Morosidad | Código de descarga y orden de la lectura | La definición del indicador y las revisiones de datos | Separar datos de hipótesis sobre las causas |
+| 4 · 10-K | Resumir 6.128 palabras en minutos | Dos cifras calculadas, no escritas en la fuente | Leer el MD&A como la versión de la gerencia |
+| 5 · Dashboard | Escribir la aplicación completa | Un parámetro obsoleto | Qué mostrar y qué no automatizar |
+
+**Dónde ahorra más tiempo.** Escribir código para descargar, limpiar y graficar datos, y
+hacer legible un documento largo. Son tareas de horas que bajan a minutos.
+
+**Dónde no se le puede delegar nada.** Elegir qué dato representa qué concepto, decidir
+qué comparar con qué y separar lo que dicen los datos de lo que uno supone. Ninguno de
+los errores del reto habría aparecido sin un control diseñado para buscarlo.
+
+**Riesgos que conviene tener presentes:**
+
+- **Errores que no dan error.** El patrón de todo el reto: los problemas graves
+  produjeron números plausibles.
+- **Alucinaciones.** Se controlan pasándole la fuente, prohibiéndole agregar
+  información y verificando cada cifra, como en el día 4.
+- **Privacidad.** Un perfil o una muestra anonimizada suelen bastar para el diagnóstico;
+  revisa qué permite tu empresa antes de cargar datos de trabajo.
+- **Reproducibilidad.** Guarda la fecha de descarga, el código y los prompts. Los datos
+  oficiales se revisan y los modelos de IA cambian.
+- **Trazabilidad.** Cada cifra publicada debe poder rastrearse hasta un documento
+  oficial: un número de acceso de la SEC, un código de serie de FRED, una página del 10-K.
+
+## Recursos
+
+**Fuentes de datos**
+
+- [API de EDGAR de la SEC](https://www.sec.gov/search-filings/edgar-application-programming-interfaces)
+  y sus [reglas de acceso](https://www.sec.gov/os/accessing-edgar-data)
+- [Tasas de morosidad y castigos de la Reserva Federal](https://www.federalreserve.gov/releases/chargeoff/)
+  y las [mismas series en FRED](https://fred.stlouisfed.org/release/tables?eid=148470&rid=231)
+- [ALFRED](https://alfred.stlouisfed.org/), versiones históricas de las series de FRED
+
+**Herramientas y documentación**
+
+- [NotebookLM: fuentes admitidas](https://support.google.com/notebooklm/answer/16215270?hl=en)
+  y [resúmenes en audio](https://support.google.com/notebooklm/answer/16212820?hl=en)
+- [Cursor: reglas del proyecto](https://cursor.com/docs/context/rules)
+- [Streamlit](https://docs.streamlit.io/) y
+  [Community Cloud](https://docs.streamlit.io/deploy/streamlit-community-cloud)
+
+**Los cinco días, con sus notebooks, datos y prompts**
+
+1. [De los reportes de la SEC a los indicadores](../ia-finanzas-1-reportes-sec/index.qmd)
+2. [Limpiar datos financieros con IA](../ia-finanzas-2-limpieza/index.qmd)
+3. [Morosidad y ciclo de crédito](../ia-finanzas-3-morosidad/index.qmd)
+4. [De un 10-K a un podcast](../ia-finanzas-4-10k-podcast/index.qmd)
+5. Un dashboard financiero (este post)

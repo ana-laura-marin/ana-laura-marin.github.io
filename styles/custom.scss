@@ -25,12 +25,38 @@ $navbar-fg: #1a1a1a;
   margin: 0 auto;
 }
 
-// Páginas a ancho completo (page-layout: full, sin barra lateral derecha).
 // El <main> es un grid item; con `margin: 0 auto` se dimensiona a su max-content
 // (limitado por max-width) y desborda en pantallas estrechas. Con width: 100%
 // llena su celda de grid, respeta el max-width y queda centrado y responsive.
-.quarto-container.page-layout-full main.content {
+// Aplica a todas las páginas, no solo a las de ancho completo.
+main.content {
   width: 100%;
+  min-width: 0;
+}
+
+// Tablas embebidas de notebooks: se desplazan dentro de su caja en vez de ensanchar la página
+.cell-output-display {
+  overflow-x: auto;
+}
+
+// En teléfonos, las tablas de markdown se desplazan dentro de su caja
+@media (max-width: 576px) {
+  main table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+// Títulos de bloques de código (filename) pueden ocupar varias líneas
+.code-with-filename-file pre,
+.code-with-filename-file strong {
+  white-space: normal;
+}
+
+// Código en línea (URLs, etiquetas largas) puede partirse en pantallas angostas
+p code, li code, td code {
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 // Tarjetas de listing

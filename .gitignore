@@ -22,3 +22,6 @@ proyectos/gasto-tarjetas/data/
 
 # Configuración local de Claude Code
 .claude/
+
+# Caché local de descargas de la SEC (blog)
+blog/*/data/raw/
