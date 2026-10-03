@@ -78,36 +78,13 @@ responde al precio que encuentra.
 Las dos curvas casi no se superponen. No son dos intensidades del mismo
 comportamiento: son dos comportamientos.
 
-## Clustering: encontrar los grupos sin decidir cuántos
+## Clustering
 
-La pregunta siguiente es si estos patrones agrupan a los clientes en tipos
-reconocibles. El método habitual, k-means, exige decidir de antemano cuántos
-grupos hay, que es justamente lo que uno quiere averiguar. DBSCAN no: los
-descubre por densidad, y a quien no encaja en ninguno lo marca como atípico en
-vez de forzarlo adentro.
-
-El obstáculo es que cada cliente se describe con 26 variables, y en esa
-dimensión todos terminan pareciéndose entre sí: la medida estándar de
-separación entre grupos da **0.24 sobre 1**, apenas mejor que repartirlos al
-azar. Comprimir las 26 variables a un mapa de dos dimensiones resuelve el
-problema.
-
-{{< embed notebooks/02_densidad.ipynb#fig-umap >}}
-
-La misma medida sube a **0.82**. Los cuatro grumos no los dibujó la compresión:
-estaban en los datos y no se veían.
-
-### Cómo decide DBSCAN
-
-Donde k-means asigna cada cliente al centro más cercano, DBSCAN mide **densidad
-local**: con un radio de vecindad y un mínimo de vecinos dentro de él, clasifica
-a cada cliente como **núcleo**, **frontera** o **ruido**.
-
-{{< embed notebooks/02_densidad.ipynb#fig-como-agrupa >}}
-
-Un grupo es una cadena de núcleos que se alcanzan entre sí, así que la cantidad
-sale de la geometría en vez de fijarse de antemano. Y quien no entra en ninguna
-cadena queda marcado como atípico, no empujado al grupo menos malo.
+Cada cliente se describe por la composición de su canasta en 26 variables, y en
+esa dimensión casi no se distinguen entre sí: la medida estándar de separación
+da **0.24 sobre 1**. Por eso se comprimen a un mapa de dos dimensiones (UMAP),
+donde la misma medida sube a **0.82**, y sobre ese mapa DBSCAN agrupa por
+densidad, sin fijar de antemano cuántos grupos hay ni forzar a nadie adentro.
 
 {{< embed notebooks/02_densidad.ipynb#fig-dbscan >}}
 
@@ -144,77 +121,21 @@ ticket de 48, pero es el único grupo cuyo canal predominante es el digital.
 Contrastados contra los cuatro perfiles con los que se generaron los datos, la
 correspondencia es casi exacta: **3 asignaciones erradas de 600**.
 
-## Los que no encajan
-
-El cliente que DBSCAN dejó afuera no es un error a limpiar: los puntos de ruido
-suelen ser lo más informativo del análisis (la cuenta más rentable, el fraude,
-el error de captura que nadie vio). Con un solo caso no hay nada que promediar,
-así que se exige más densidad para ver quiénes caen primero. Aparecen 22.
-
-{{< embed notebooks/02_densidad.ipynb#tbl-outliers >}}
-
-El perfil es nítido: **marcadamente utilitarios**, con poco gasto nocturno y en
-línea, en ciudades más chicas. Pero la última columna cambia la lectura. Su
-percentil medio se mueve entre 32 y 72, o sea que **no son extremos en ninguna
-variable**: una cuenta de máximo valor o un fraude estarían pegados al 99 o al 1.
-
-Son casos *fronterizos*, no de cola, y eso cambia qué hacer con ellos. Un
-extremo se revisa uno por uno porque puede ser un error o la mejor cuenta de la
-cartera. Un fronterizo casi nunca es error: la pregunta que abre no es qué le
-pasa a ese cliente, sino si al esquema de segmentación le falta un grupo.
-
 ## Conclusiones
 
-**Segmentar por composición y no por monto reordena las prioridades de cartera:
-el segmento que más factura no es el más numeroso, el más numeroso no es el más
-valioso, y el más digital todavía no es ninguno de los dos.**
+**Segmentar por composición y no por monto reordena las prioridades de
+cartera.** El 17.7% de los clientes, con 91% de gasto hedónico, explica el 43.3%
+de la facturación: es el segmento a defender y el primero que se contrae con el
+ciclo. Rutina de mantenimiento y hogar con dependientes suman el 54% de los
+clientes y el 38.5% del monto, el piso predecible pero no el motor. El digital
+joven, con 52% de gasto en línea, aporta apenas 18%; la pregunta es si migra
+hacia alto valor al envejecer.
 
-**1 · La facturación está concentrada en un segmento chico y enteramente
-discrecional.** El 17.7% de los clientes explica el 43.3% del monto, 2.5 veces
-su peso proporcional, con un ticket cinco veces mayor que el del grupo más
-numeroso y 91% de gasto hedónico. Es el segmento a defender, y también el
-primero que se contrae cuando el ciclo se da vuelta: no hay colchón de gasto de
-necesidad debajo.
-
-**2 · El volumen de clientes está donde no está el valor.** Rutina de
-mantenimiento y hogar con dependientes suman el 54% de los clientes y el 38.5%
-de la facturación. A cambio, es el flujo más predecible de la cartera:
-supermercado, hogar y salud no dependen del ánimo ni del ciclo. Son el piso, no
-el motor.
-
-**3 · Lo digital hoy es un rasgo de edad, no una fuente de valor.** El grupo
-digital joven es el único con mayoría de gasto en línea, 52% contra 5–11% en
-todos los demás, pero aporta 18% de la facturación con un ticket de 48 y 28 años
-de edad media. La pregunta que abre no es cuánto vale hoy, sino si migra hacia
-alto valor al envejecer o si su perfil de consumo se queda donde está.
-
-**4 · La estructura aparece sin postularla, y los que no encajan son señal de
-diseño.** Nadie le dijo al algoritmo cuántos grupos buscar: los cuatro salen de
-la densidad, con 3 asignaciones erradas de 600 al contrastarlos contra los
-perfiles con que se simularon los datos. Los clientes fronterizos no son ruido a
-descartar: marcan dónde el esquema de cuatro segmentos empieza a quedar corto.
-
-### Lo que este análisis todavía no prueba
-
-**Nada de esto describe clientes reales.** Los datos son simulados, y eso
-explica también por qué todo salió tan limpio: cuatro mezclas bien separadas
-producen bordes nítidos que una cartera real no tiene. Con datos verdaderos
-`min_samples` deja de tener un valor auditable contra la verdad y pasa a ser una
-decisión de negocio (cuál es el grupo más chico que vale la pena atender), y la
-partición hay que juzgarla por si los perfiles son accionables, no por un
-índice.
-
-**La reducción a 2D pudo haber ayudado de más.** UMAP optimiza la topología
-local y no las distancias, así que la separación del mapa no es proporcional a
-la disimilitud real y una proyección puede tanto fabricar grupos como
-disolverlos. Acá se verificó que no lo hizo. Con datos reales, esa verificación
-no existe.
-
-**Y todo lo anterior es descriptivo.** Los contrastes comparan promedios sin
-controlar por demografía ni por composición de cartera. Separar qué parte de la
-brecha nocturna viene del tipo de gasto y qué parte de quién gasta requiere un
-modelo, un logit fraccional sobre las participaciones, que es el paso
-siguiente.
+**El método encuentra la estructura sin postularla, pero todavía no describe
+clientes reales.** Los cuatro grupos salen de la densidad con 3 asignaciones
+erradas de 600, sobre datos simulados con bordes más nítidos que los de una
+cartera real. El paso siguiente es repetirlo con datos verdaderos y estimar un
+logit fraccional que controle por demografía.
 
 ## El análisis completo
 
