@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#ecfdf5"/>
+  <!-- linea base -->
+  <line x1="50" y1="255" x2="560" y2="255" stroke="#94a3b8" stroke-width="2"/>
+  <!-- barras: revenue mensual creciente con pico Black Friday -->
+  <rect x="70"  y="205" width="34" height="50"  fill="#0d9488" opacity="0.55" rx="3"/>
+  <rect x="118" y="188" width="34" height="67"  fill="#0d9488" opacity="0.6" rx="3"/>
+  <rect x="166" y="168" width="34" height="87"  fill="#0d9488" opacity="0.62" rx="3"/>
+  <rect x="214" y="150" width="34" height="105" fill="#0d9488" opacity="0.66" rx="3"/>
+  <rect x="262" y="128" width="34" height="127" fill="#0d9488" opacity="0.7" rx="3"/>
+  <rect x="310" y="70"  width="34" height="185" fill="#f59e0b" opacity="0.9" rx="3"/>
+  <rect x="358" y="118" width="34" height="137" fill="#0d9488" opacity="0.74" rx="3"/>
+  <rect x="406" y="108" width="34" height="147" fill="#0d9488" opacity="0.78" rx="3"/>
+  <rect x="454" y="112" width="34" height="143" fill="#0d9488" opacity="0.82" rx="3"/>
+  <rect x="502" y="104" width="34" height="151" fill="#0d9488" opacity="0.86" rx="3"/>
+  <!-- etiqueta pico -->
+  <text x="327" y="60" text-anchor="middle" fill="#b45309" font-family="system-ui" font-size="13" font-weight="600">Black Friday</text>
+  <text x="305" y="308" text-anchor="middle" fill="#065f46" font-family="system-ui" font-size="17" font-weight="600">SQL · Olist E-commerce (2016–2018)</text>
+</svg>
