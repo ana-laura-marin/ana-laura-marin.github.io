@@ -5,11 +5,11 @@ Análisis en **SQL** (SQLite) del dataset público de e-commerce brasileño **Ol
 
 El reporte cubre cinco ejes y cierra con una síntesis de hallazgos y recomendaciones:
 
-1. **Caracterización del período** — volumen, revenue y estacionalidad.
-2. **Red de vendedores** — concentración por vendedor y distribución geográfica.
-3. **Satisfacción del cliente** — distribución de reseñas e impacto del retraso en la entrega.
-4. **Eficiencia logística** — *On-Time Delivery Rate* y tiempos de entrega.
-5. **Categorías y métodos de pago** — revenue, ratio flete/precio y uso de cuotas.
+1. **Caracterización del período**: volumen, revenue y estacionalidad.
+2. **Red de vendedores**: concentración por vendedor y distribución geográfica.
+3. **Satisfacción del cliente**: distribución de reseñas e impacto del retraso en la entrega.
+4. **Eficiencia logística**: *On-Time Delivery Rate* y tiempos de entrega.
+5. **Categorías y métodos de pago**: revenue, ratio flete/precio y uso de cuotas.
 
 ## Hallazgos clave
 
@@ -31,12 +31,12 @@ calendario con `date()`, lo que recupera 1.292 entregas cumplidas y sube el OTD 
 
 ## Estructura
 
-- `index.ipynb` — reporte completo (consultas SQL, tablas y visualizaciones).
-- `data/portafolio_olist.db` — base de datos SQLite utilizada en el análisis.
+- `index.ipynb`: reporte completo (consultas SQL, tablas y visualizaciones).
+- `data/portafolio_olist.db`: base de datos SQLite utilizada en el análisis.
 
 El notebook se publica con sus salidas embebidas: Quarto no re-ejecuta los `.ipynb`, así que
 tras editarlo hay que ejecutarlo antes de renderizar.
 
 ## Datos
 
-Olist Brazilian E-Commerce Public Dataset — [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
+Olist Brazilian E-Commerce Public Dataset · [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce).
