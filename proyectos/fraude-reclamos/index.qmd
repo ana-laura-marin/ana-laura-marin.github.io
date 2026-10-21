@@ -1,0 +1,539 @@
+---
+title: "Detección de fraude en reclamos de autos"
+description: "Logit explicable para priorizar la cola de investigación de una aseguradora: fuga de información, etiqueta sesgada, validación fuera de tiempo y cuánto dinero recupera cada política con la capacidad actual."
+date: "2026-10-21"
+categories: [Riesgo, Python, Modelos de clasificación]
+image: thumbnail.svg
+toc: true
+toc-depth: 2
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+::: {.callout-tip appearance="simple"}
+**Código.** Cada bloque se despliega con *Ver código*, y el botón **</> Código** de
+arriba muestra el documento completo.
+Repositorio: [Caso-Identificaci-n-de-Fraudes](https://github.com/ana-laura-marin/Caso-Identificaci-n-de-Fraudes) ·
+[Abrir en Codespace](https://expert-guide-wrwxwqv6669rc9pw5.github.dev/)
+:::
+
+**El problema.** Una aseguradora paga reclamos de autos que no debería, y su Unidad
+de Investigación (cuatro analistas) no da abasto. Con 20 000 reclamos desde enero de
+2024, la pregunta no es qué modelo tiene el AUC más alto, sino **con 80 expedientes al
+mes, qué regla recupera más colones** y si se puede defender ante el comité de dirección.
+Los datos son sintéticos y forman parte del caso de cierre del programa STATO Pro.
+
+## Lo que encontré en los datos
+
+1. La marca de fraude solo existe donde la Unidad abrió expediente (401 de 401): el
+   modelo aprende el fraude **detectado**, no todo el fraude, y no se puede medir el
+   que hoy se escapa.
+2. Un fraude tarda unos 81 días en cerrarse; los reclamos desde abril de 2026 no tienen
+   la etiqueta madura y quedan fuera del modelo.
+3. `monto_pagado`, `dias_hasta_cierre` e `investigacion_abierta` revelan el resultado, y
+   `score_riesgo_conductor` no existe: los resultados del borrador no son alcanzables.
+4. El robo total es el 6 % de los reclamos y el 72 % de los colones de fraude, y hoy
+   se investiga solo el 58 % de los robos totales.
+5. Provincia y edad del vehículo no discriminan; los talleres grandes tienen menos
+   fraude que el promedio, y un puñado de talleres medianos tiene tasas de 3 a 4 veces
+   la normal.
+6. Un logit de 10 variables ordena razonablemente (AUC 0,79 fuera de tiempo) y cada
+   coeficiente tiene el signo que espera un analista; con 401 fraudes no hay base para
+   deep learning.
+7. Con la capacidad actual, "todo robo total más el top del modelo" captura cerca del
+   87 % de los colones de fraude detectado; el puntaje **prioriza**, no reemplaza al
+   analista ni justifica un rechazo automático.
+
+```{python}
+#| label: setup
+import warnings
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import statsmodels.formula.api as smf
+from scipy.stats import binom, chi2
+from sklearn.metrics import average_precision_score, roc_auc_score
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", 140)
+```
+
+## Datos y calidad
+
+```{python}
+#| label: datos
+reclamos = pd.read_csv("reclamos.csv", parse_dates=["fecha_siniestro", "fecha_reporte"])
+print(f"{len(reclamos):,} reclamos, {reclamos['marca_fraude'].sum()} fraudes "
+      f"({reclamos['marca_fraude'].mean():.1%})")
+
+# La etiqueta depende de que alguien investigue
+print(pd.crosstab(reclamos["investigacion_abierta"], reclamos["marca_fraude"],
+                  margins=True, margins_name="Total"))
+
+# Fuga: estas columnas se conocen después del resultado
+print(reclamos.groupby("marca_fraude")[["monto_pagado", "dias_hasta_cierre"]].median())
+```
+
+```{python}
+#| label: madurez
+#| fig-cap: "La tasa de fraude cae en los meses recientes porque esos reclamos todavía no cerraron."
+por_mes = reclamos.groupby(reclamos["fecha_reporte"].dt.to_period("M")).agg(
+    tasa_fraude=("marca_fraude", "mean"),
+    sin_cerrar=("dias_hasta_cierre", lambda s: s.isna().mean()),
+    sin_fecha_siniestro=("fecha_siniestro", lambda s: s.isna().mean()),
+)
+print("Días hasta el cierre de un fraude (percentiles 50/90/95):",
+      reclamos.loc[reclamos["marca_fraude"] == 1, "dias_hasta_cierre"].quantile([.5, .9, .95]).tolist())
+print("Meses con fecha_siniestro faltante:",
+      {str(k): round(v, 2) for k, v in por_mes["sin_fecha_siniestro"].items() if v > 0})
+
+ax = por_mes["tasa_fraude"].plot(figsize=(9, 3.5), marker="o", title="Tasa de fraude por mes de reporte")
+ax.axvline(pd.Period("2026-04", "M"), color="grey", ls="--")
+ax.text(pd.Period("2026-04", "M"), ax.get_ylim()[1] * 0.9, "  corte", color="grey")
+ax.set_ylabel("Tasa de fraude"); ax.set_xlabel("")
+plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: corte
+# Periodo con etiqueta madura
+df = reclamos[reclamos["fecha_reporte"] < "2026-04-01"].copy()
+assert df["dias_hasta_cierre"].notna().all(), "hay reclamos abiertos en el periodo modelado"
+df["monto_fraude"] = df["monto_reclamado"] * df["marca_fraude"]
+meses = df["fecha_reporte"].dt.to_period("M").nunique()
+print(f"Periodo modelado: {len(df):,} reclamos en {meses} meses")
+```
+
+## Descriptivo del negocio
+
+```{python}
+#| label: kpis
+kpis = pd.Series({
+    "Reclamado (millones ₡)": df["monto_reclamado"].sum() / 1e6,
+    "Pagado (millones ₡)": df["monto_pagado"].sum() / 1e6,
+    "Fraude detectado (millones ₡)": df["monto_fraude"].sum() / 1e6,
+    "Tasa de fraude (%)": df["marca_fraude"].mean() * 100,
+    "Expedientes por analista al mes": df["investigacion_abierta"].sum() / meses / 4,
+    "Acierto de la investigación (%)": df["marca_fraude"].sum() / df["investigacion_abierta"].sum() * 100,
+})
+kpis.round(1).to_frame("valor")
+```
+
+```{python}
+#| label: resumen
+def resumen(datos, columna):
+    """Reclamos, tasa de fraude y colones de fraude por categoría."""
+    tabla = datos.groupby(columna, observed=True).agg(
+        reclamos=("id_reclamo", "size"),
+        tasa_fraude=("marca_fraude", "mean"),
+        fraude_millones=("monto_fraude", "sum"),
+        pct_investigado=("investigacion_abierta", "mean"),
+    )
+    tabla["fraude_millones"] /= 1e6
+    tabla["pct_reclamos"] = tabla["reclamos"] / tabla["reclamos"].sum()
+    tabla["pct_fraude"] = tabla["fraude_millones"] / tabla["fraude_millones"].sum()
+    return tabla.sort_values("fraude_millones", ascending=False).round(3)
+
+resumen(df, "tipo_siniestro")
+```
+
+```{python}
+#| label: fig-tipo
+#| fig-cap: "El robo total concentra el dinero en fraude."
+tipo = resumen(df, "tipo_siniestro")
+ax = tipo[["pct_reclamos", "pct_fraude"]].sort_values("pct_fraude").plot(
+    kind="barh", figsize=(8, 4), title="Peso de cada tipo de siniestro")
+ax.legend(["% de los reclamos", "% de los colones de fraude"])
+ax.set_xlabel("Proporción"); ax.set_ylabel("")
+plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: provincia-edad
+df["edad_tramo"] = pd.cut(df["edad_vehiculo"], bins=[-1, 4, 8, 12, 25],
+                          labels=["0-4", "5-8", "9-12", "13+"])
+fig, ejes = plt.subplots(1, 2, figsize=(10, 3.8), sharey=True)
+resumen(df, "provincia")["tasa_fraude"].sort_values().plot(kind="bar", ax=ejes[0], title="Por provincia")
+resumen(df, "edad_tramo").sort_index()["tasa_fraude"].plot(kind="bar", ax=ejes[1], title="Por edad del vehículo")
+for ax in ejes:
+    ax.axhline(df["marca_fraude"].mean(), color="grey", ls="--"); ax.set_xlabel("")
+    ax.tick_params(axis="x", rotation=30)
+ejes[0].set_ylabel("Tasa de fraude")
+fig.suptitle("Ni la provincia ni la edad del vehículo separan el fraude (línea = promedio)")
+plt.tight_layout(); plt.show()
+```
+
+```{python}
+#| label: talleres
+talleres = df.groupby("taller_id").agg(reclamos=("id_reclamo", "size"),
+                                      fraudes=("marca_fraude", "sum"))
+talleres["tasa_fraude"] = talleres["fraudes"] / talleres["reclamos"]
+talleres["tramo"] = pd.cut(talleres["reclamos"], bins=[0, 30, 100, 500, 5000],
+                           labels=["<30", "30-100", "100-500", "500+"])
+por_tramo = talleres.groupby("tramo", observed=True)[["reclamos", "fraudes"]].sum()
+por_tramo["talleres"] = talleres.groupby("tramo", observed=True).size()
+por_tramo["tasa_fraude"] = (por_tramo["fraudes"] / por_tramo["reclamos"]).round(3)
+print(por_tramo)
+
+# ¿Cuán raro sería ver tantos fraudes si el taller tuviera la tasa promedio?
+tasa_media = df["marca_fraude"].mean()
+talleres["prob_azar"] = binom.sf(talleres["fraudes"] - 1, talleres["reclamos"], tasa_media)
+a_revisar = talleres[talleres["reclamos"] >= 20].query("prob_azar < 0.05").sort_values("prob_azar")
+print(f"\nTalleres para revisar (con 405 talleres, algunos aparecen por azar):")
+a_revisar.round(4)
+```
+
+## Variables candidatas
+
+Solo entra información disponible el día que se reporta el reclamo. Quedan fuera
+`investigacion_abierta`, `dias_hasta_cierre` y `monto_pagado` (fuga), y nombre,
+cédula, placa y teléfono (identificadores personales).
+
+```{python}
+#| label: variables
+df["robo_total"] = (df["tipo_siniestro"] == "robo_total").astype(int)
+df["vidrios"] = (df["tipo_siniestro"] == "vidrios").astype(int)
+df["canal_taller"] = (df["canal_reporte"] == "taller").astype(int)
+df["ratio_monto"] = df["monto_reclamado"] / df["suma_asegurada"]
+df["log_monto"] = np.log(df["monto_reclamado"])            # mínimo 3.000, sin ceros
+df["log_antig"] = np.log(df["antiguedad_poliza_dias"])     # mínimo 1 día, sin ceros
+# fecha_siniestro falta en el 100 % de los reclamos de ago a oct-2025 y en ningún otro
+# mes: es una falla de extracción, no un rasgo del reclamo. Se imputa con la mediana de
+# los meses sin falla, conocida antes del periodo de validación.
+MEDIANA_DIAS = df.loc[df["fecha_reporte"] < "2025-04-01", "dias_reporte"].median()
+df["dias_reporte_imp"] = df["dias_reporte"].fillna(MEDIANA_DIAS)
+df["noche"] = ((df["hora_siniestro"] >= 22) | (df["hora_siniestro"] <= 5)).astype(int)
+df["previos"] = df["num_reclamos_previos_24m"].clip(upper=3)
+```
+
+Partición temporal en tres tramos: **train** para estimar y elegir variables,
+**valid** para comparar modelos y **test** que se mira una sola vez al final.
+
+```{python}
+#| label: particion
+train = df[df["fecha_reporte"] < "2025-04-01"].copy()
+valid = df[(df["fecha_reporte"] >= "2025-04-01") & (df["fecha_reporte"] < "2025-10-01")].copy()
+test = df[df["fecha_reporte"] >= "2025-10-01"].copy()
+pd.DataFrame({n: {"reclamos": len(p), "fraudes": p["marca_fraude"].sum(),
+                  "desde": p["fecha_reporte"].min().date(), "hasta": p["fecha_reporte"].max().date()}
+              for n, p in [("train", train), ("valid", valid), ("test", test)]}).T
+```
+
+El historial del taller solo cuenta reclamos del mismo taller **ya cerrados** el día
+del reporte, y se suaviza hacia la tasa base para que un taller con 3 reclamos y 1
+fraude no aparezca con 33 %.
+
+```{python}
+#| label: taller-historial
+TASA_BASE = train["marca_fraude"].mean()
+K_SUAVIZADO = 50
+
+def historial_taller(datos, k=K_SUAVIZADO, base=TASA_BASE):
+    datos = datos.copy()
+    datos["fecha_cierre"] = datos["fecha_reporte"] + pd.to_timedelta(datos["dias_hasta_cierre"], unit="D")
+    tasa = pd.Series(base, index=datos.index)
+    for _, g in datos.dropna(subset=["taller_id"]).groupby("taller_id"):
+        cierres = g.sort_values("fecha_cierre")
+        fechas_cierre = cierres["fecha_cierre"].to_numpy()
+        fraudes_acum = np.concatenate([[0], cierres["marca_fraude"].cumsum().to_numpy()])
+        n_previos = np.searchsorted(fechas_cierre, g["fecha_reporte"].to_numpy(), side="left")
+        tasa.loc[g.index] = (fraudes_acum[n_previos] + k * base) / (n_previos + k)
+    return tasa * 100   # en puntos porcentuales
+
+df["tasa_taller"] = historial_taller(df)
+for parte in (train, valid, test):
+    parte["tasa_taller"] = df.loc[parte.index, "tasa_taller"]
+```
+
+## Selección de variables
+
+```{python}
+#| label: ajustar
+def ajustar(formula_derecha, datos):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        m = smf.logit("marca_fraude ~ " + formula_derecha, datos).fit(disp=0, maxiter=200)
+    if not m.mle_retvals["converged"]:
+        raise RuntimeError(f"no convergió: {formula_derecha}")
+    return m
+
+bloques = {
+    "tipo": "C(tipo_siniestro, Treatment('colision'))",
+    "canal": "C(canal_reporte, Treatment('app'))",
+    "provincia": "C(provincia, Treatment('San Jose'))",
+    "ratio": "ratio_monto",
+    "monto": "log_monto",
+    "antiguedad_poliza": "log_antig",
+    "dias_reporte": "dias_reporte_imp",
+    "noche": "noche",
+    "edad_vehiculo": "edad_vehiculo",
+    "previos": "previos",
+    "parte_policial": "hubo_parte_policial",
+    "testigos": "hubo_testigos",
+    "taller": "tasa_taller",
+}
+
+# Colinealidad entre numéricas (VIF > 5 sería preocupante)
+numericas = ["ratio_monto", "log_monto", "log_antig", "dias_reporte_imp", "edad_vehiculo",
+             "previos", "tasa_taller"]
+X = train[numericas].assign(const=1.0)
+pd.Series([variance_inflation_factor(X.values, i) for i in range(len(numericas))],
+          index=numericas, name="VIF").round(2).to_frame()
+```
+
+Test de razón de verosimilitud: se saca un bloque a la vez del modelo completo y se
+mide cuánto empeora (solo train).
+
+```{python}
+#| label: lr-bloques
+completo = ajustar(" + ".join(bloques.values()), train)
+filas = []
+for nombre in bloques:
+    sin = ajustar(" + ".join(v for k, v in bloques.items() if k != nombre), train)
+    lr = 2 * (completo.llf - sin.llf)
+    gl = completo.df_model - sin.df_model
+    filas.append({"bloque": nombre, "gl": int(gl), "LR": lr, "p": chi2.sf(lr, gl),
+                  "dAIC_al_sacar": sin.aic - completo.aic,
+                  "dBIC_al_sacar": sin.bic - completo.bic})
+pd.DataFrame(filas).sort_values("p").round(3).set_index("bloque")
+```
+
+Tipo de siniestro y canal se agrupan (robo total / vidrios / resto y taller / resto)
+porque de sus 5 y 3 coeficientes trabaja uno solo, y el BIC los penaliza. El ratio
+monto/suma repite la señal de robo total, que reclama casi toda la suma asegurada.
+
+```{python}
+#| label: modelos
+base_m2 = ("robo_total + vidrios + canal_taller + log_antig + dias_reporte_imp"
+           " + noche + previos + hubo_parte_policial + hubo_testigos")
+modelos = {
+    "M0 completo": " + ".join(bloques.values()),
+    "M1 sin provincia/edad/monto": ("C(tipo_siniestro, Treatment('colision')) + C(canal_reporte, Treatment('app'))"
+                                    " + ratio_monto + log_antig + dias_reporte_imp"
+                                    " + noche + previos + hubo_parte_policial + hubo_testigos + tasa_taller"),
+    "M2 categorías agrupadas": base_m2 + " + ratio_monto + tasa_taller",
+    "M3 = M2 sin ratio": base_m2 + " + tasa_taller",
+    "M4 = M3 sin taller": base_m2,
+}
+
+# Capacidad real: investigaciones promedio por mes en train (4 analistas)
+CAPACIDAD = round(train["investigacion_abierta"].sum() / train["fecha_reporte"].dt.to_period("M").nunique())
+
+def acierto_capacidad(datos, puntaje, k=CAPACIDAD):
+    """De los k reclamos con mayor puntaje cada mes, cuántos son fraude."""
+    d = datos.assign(puntaje=puntaje, mes=datos["fecha_reporte"].dt.to_period("M"))
+    top = d.sort_values("puntaje", ascending=False).groupby("mes").head(k)
+    return pd.Series({"acierto_topK": top["marca_fraude"].mean(),
+                      "fraudes_capturados_pct": top["marca_fraude"].sum() / d["marca_fraude"].sum(),
+                      "colones_capturados_pct": (top["monto_reclamado"] * top["marca_fraude"]).sum()
+                                                / (d["monto_reclamado"] * d["marca_fraude"]).sum()})
+
+ajustes = {k: ajustar(f, train) for k, f in modelos.items()}
+comparacion = pd.DataFrame({
+    k: {"parametros": int(m.df_model) + 1, "AIC_train": m.aic, "BIC_train": m.bic,
+        "AUC_valid": roc_auc_score(valid["marca_fraude"], m.predict(valid)),
+        "PR_AUC_valid": average_precision_score(valid["marca_fraude"], m.predict(valid)),
+        **acierto_capacidad(valid, m.predict(valid)).to_dict()}
+    for k, m in ajustes.items()}).T
+print(f"Capacidad = {CAPACIDAD} reclamos/mes")
+comparacion.astype(float).round(3)
+```
+
+```{python}
+#| label: lr-anidados
+def lr_anidados(grande, chico):
+    a, b = ajustes[grande], ajustes[chico]
+    lr = 2 * (a.llf - b.llf); gl = a.df_model - b.df_model
+    return {"comparación": f"{grande} vs {chico}", "LR": round(lr, 2), "gl": int(gl),
+            "p": round(chi2.sf(lr, gl), 3)}
+
+pd.DataFrame([lr_anidados("M0 completo", "M1 sin provincia/edad/monto"),
+              lr_anidados("M1 sin provincia/edad/monto", "M2 categorías agrupadas"),
+              lr_anidados("M2 categorías agrupadas", "M3 = M2 sin ratio"),
+              lr_anidados("M3 = M2 sin ratio", "M4 = M3 sin taller")]).set_index("comparación")
+```
+
+```{python}
+#| label: eleccion
+elegido = comparacion["BIC_train"].astype(float).idxmin()
+print(f"Modelo elegido (menor BIC en train, confirmado en valid): {elegido}")
+```
+
+## Modelo final y odds ratios
+
+Se reestima con train + valid y se evalúa una sola vez en test.
+
+```{python}
+#| label: final
+train_valid = pd.concat([train, valid])
+final = ajustar(modelos[elegido], train_valid)
+print(f"Fraudes por parámetro (EPV): {train_valid['marca_fraude'].sum() / (final.df_model + 1):.1f}")
+
+ic = np.exp(final.conf_int())
+# Los p-valores después de seleccionar variables son optimistas: leer como descriptivos.
+pd.DataFrame({"OR": np.exp(final.params), "IC95_inf": ic[0],
+              "IC95_sup": ic[1], "p": final.pvalues}).round(3)
+```
+
+| Variable | Lectura para el comité |
+|---|---|
+| Robo total | Multiplica por casi 9 las chances de fraude frente a una colisión |
+| Siniestro de noche (22–5 h) | Las duplica |
+| Reportado por el taller | +73 % |
+| Cada reclamo previo en 24 meses | +35 % |
+| Cada punto de tasa histórica del taller | +39 % |
+| Cada día de demora en reportar | +9 % |
+| Antigüedad de la póliza | Cada vez que se duplica, las chances bajan alrededor de 21 % |
+| Hay testigos / hay parte policial | −36 % / −60 % |
+| Vidrios | −73 % |
+
+## Evaluación fuera de tiempo (oct-2025 a mar-2026)
+
+```{python}
+#| label: test
+p_test = final.predict(test)
+meses_test = test["fecha_reporte"].dt.to_period("M")
+investigados = test[test["investigacion_abierta"] == 1]
+print(f"AUC = {roc_auc_score(test['marca_fraude'], p_test):.3f} | "
+      f"PR-AUC = {average_precision_score(test['marca_fraude'], p_test):.3f} | "
+      f"tasa base = {test['marca_fraude'].mean():.3f}")
+
+actual = pd.Series({"acierto_topK": investigados["marca_fraude"].mean(),
+                    "fraudes_capturados_pct": 1.0,   # por construcción
+                    "colones_capturados_pct": 1.0})
+pd.DataFrame({"modelo_topK": acierto_capacidad(test, p_test),
+              "analistas_hoy": actual}).round(3)
+```
+
+La comparación castiga al modelo: un reclamo que nadie investigó tiene
+`marca_fraude = 0` aunque haya sido fraude, así que el acierto del modelo es un
+**piso**. Dos lecturas más justas, con los reclamos que sí tienen etiqueta real:
+
+```{python}
+#| label: lectura-justa
+d_test = test.assign(p=p_test, mes=meses_test)
+top = d_test.sort_values("p", ascending=False).groupby("mes").head(CAPACIDAD)
+top_inv = top[top["investigacion_abierta"] == 1]
+print(f"Del top-{CAPACIDAD} mensual del modelo, {len(top_inv) / len(top):.0%} ya lo investigaban los analistas; "
+      f"en esos el acierto es {top_inv['marca_fraude'].mean():.1%} "
+      f"(vs {investigados['marca_fraude'].mean():.1%} de todo lo investigado).")
+print(f"AUC dentro de lo investigado: "
+      f"{roc_auc_score(investigados['marca_fraude'], p_test[investigados.index]):.3f}")
+print(f"Reclamos del top-{CAPACIDAD} que nadie investigó: {len(top) - len(top_inv)} en 6 meses "
+      f"(etiqueta desconocida, no 'limpia').")
+```
+
+```{python}
+#| label: fig-calibracion
+#| fig-cap: "El puntaje está bien calibrado: una probabilidad de 10 % se observa como cerca de 10 %."
+cal = (test.assign(p=p_test, decil=pd.qcut(p_test, 10, labels=False, duplicates="drop") + 1)
+           .groupby("decil").agg(p_media=("p", "mean"), tasa_obs=("marca_fraude", "mean")))
+ax = cal.plot(kind="bar", figsize=(8, 3.5), title="Calibración en test por decil de puntaje")
+ax.legend(["Probabilidad predicha", "Tasa observada"]); ax.set_xlabel("Decil de puntaje")
+plt.xticks(rotation=0); plt.tight_layout(); plt.show()
+```
+
+## Qué hacer con la capacidad actual
+
+La pregunta de negocio no es "¿qué AUC tiene?" sino "con 80 expedientes al mes,
+¿qué reglas recuperan más colones?". Se comparan cuatro políticas en test:
+
+- **Hoy:** lo que los analistas eligieron investigar.
+- **Solo robo total:** abrir expediente a todo robo total, sin modelo.
+- **Modelo:** los 80 reclamos con mayor *ahorro esperado* (probabilidad × monto) cada mes.
+- **Robo total + modelo:** todo robo total, y la capacidad restante se llena con el
+  modelo aplicado al resto.
+
+```{python}
+#| label: politicas
+d_test["fraude_col"] = d_test["monto_reclamado"] * d_test["marca_fraude"]
+d_test["ahorro_esp"] = d_test["p"] * d_test["monto_reclamado"]
+total_col = d_test["fraude_col"].sum()
+n_meses = d_test["mes"].nunique()
+
+def politica(sel):
+    return {"expedientes_mes": len(sel) / n_meses,
+            "acierto": sel["marca_fraude"].mean(),
+            "fraudes_capturados_pct": sel["marca_fraude"].sum() / d_test["marca_fraude"].sum(),
+            "colones_capturados_pct": sel["fraude_col"].sum() / total_col}
+
+es_rt = d_test["tipo_siniestro"] == "robo_total"
+solo_rt = d_test[es_rt]
+cupo_resto = CAPACIDAD - round(es_rt.sum() / n_meses)
+resto = (d_test[~es_rt].sort_values("ahorro_esp", ascending=False)
+         .groupby("mes").head(cupo_resto))
+
+politicas = pd.DataFrame({
+    "Hoy (analistas)": politica(d_test[d_test["investigacion_abierta"] == 1]),
+    "Solo robo total": politica(solo_rt),
+    "Modelo (top ahorro esperado)": politica(d_test.sort_values("ahorro_esp", ascending=False)
+                                             .groupby("mes").head(CAPACIDAD)),
+    "Robo total + modelo": politica(pd.concat([solo_rt, resto])),
+}).T
+print(f"Hoy se investiga el {solo_rt['investigacion_abierta'].mean():.0%} de los robos totales.")
+politicas.round(3)
+```
+
+```{python}
+#| label: fig-politicas
+#| fig-cap: "Colones de fraude detectado que captura cada política con la misma capacidad."
+ax = politicas["colones_capturados_pct"].iloc[1:].sort_values().plot(
+    kind="barh", figsize=(8, 3), title="% de los colones de fraude capturados (test)")
+ax.set_xlim(0, 1); ax.set_xlabel("")
+for i, v in enumerate(politicas["colones_capturados_pct"].iloc[1:].sort_values()):
+    ax.text(v + 0.01, i, f"{v:.0%}", va="center")
+plt.tight_layout(); plt.show()
+```
+
+"Hoy" captura el 100 % por construcción: es la única política cuya etiqueta se
+conoce entera. Las otras tres se miden contra lo que los analistas encontraron, así
+que su resultado real es igual o mejor que el de la tabla.
+
+## Umbral por costo
+
+Se abre expediente cuando el pago que se espera evitar supera el costo de
+investigar: $p \times \text{monto} \times f > C$.
+
+- $f$ = fracción del monto reclamado que se paga en reclamos legítimos (deducibles y
+  ajustes), calculada con los datos.
+- $C$ = costo de un expediente. **Supuesto**: no hay dato de costo; se muestran
+  varios escenarios y hay que confirmarlo con Rodrigo.
+
+```{python}
+#| label: umbral
+legitimos = train_valid[train_valid["marca_fraude"] == 0]
+F_PAGO = legitimos["monto_pagado"].sum() / legitimos["monto_reclamado"].sum()
+print(f"Se paga el {F_PAGO:.0%} de lo reclamado en reclamos legítimos")
+
+filas = []
+for costo in [100_000, 250_000, 500_000, 1_000_000]:
+    sel = d_test[d_test["ahorro_esp"] * F_PAGO > costo]
+    evitado = sel["fraude_col"].sum() * F_PAGO
+    filas.append({"costo_expediente": costo,
+                  "expedientes_mes": len(sel) / n_meses,
+                  "acierto": sel["marca_fraude"].mean(),
+                  "colones_capturados_pct": sel["fraude_col"].sum() / total_col,
+                  "beneficio_neto_mes_M": (evitado - costo * len(sel)) / n_meses / 1e6})
+pd.DataFrame(filas).set_index("costo_expediente").round(3)
+```
+
+Con cualquier costo razonable, el umbral pide **menos** expedientes que los 80 que
+hoy se abren: la capacidad no es el límite si se ordena bien la cola. El tiempo
+liberado puede ir a la muestra de auditoría.
+
+## Límites y próximos pasos
+
+- **Sesgo de la etiqueta.** El modelo aprende lo que la Unidad decidió investigar. Para
+  medir el fraude que se escapa hace falta una **muestra aleatoria de auditoría** (por
+  ejemplo, 10 reclamos no marcados por mes); con esa etiqueta se reentrena el modelo.
+- **Uso del puntaje.** Ordena la cola de los analistas; ningún reclamo se rechaza por
+  puntaje. Un puntaje alto abre un expediente, no una carta.
+- **Talleres.** Los talleres con tasa anormal son candidatos a revisión, no acusaciones;
+  conviene confirmar con Rodrigo cuáles tienen convenio.
+- **Calidad de datos.** Pedir a Sistemas que corrija `fecha_siniestro` de ago–oct 2025.
+- **Monitoreo.** Recalcular cada trimestre la calibración y el acierto del top-80, con
+  los reclamos que vayan cerrando.

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="600" height="340">
+  <rect width="600" height="340" fill="#eff6ff"/>
+  <rect x="70" y="236" width="60" height="24" fill="#2563eb" opacity="0.35" rx="4"/>
+  <rect x="160" y="226" width="60" height="34" fill="#2563eb" opacity="0.35" rx="4"/>
+  <rect x="250" y="231" width="60" height="29" fill="#2563eb" opacity="0.35" rx="4"/>
+  <rect x="340" y="240" width="60" height="20" fill="#2563eb" opacity="0.35" rx="4"/>
+  <rect x="430" y="60" width="60" height="200" fill="#2563eb" opacity="0.85" rx="4"/>
+  <text x="460" y="50" text-anchor="middle" fill="#1e40af" font-family="system-ui" font-size="14" font-weight="600">72 %</text>
+  <line x1="30" y1="260" x2="570" y2="260" stroke="#94a3b8" stroke-width="2"/>
+  <text x="300" y="310" text-anchor="middle" fill="#1e40af" font-family="system-ui" font-size="16" font-weight="600">Fraude en reclamos de autos · Logit explicable</text>
+</svg>
