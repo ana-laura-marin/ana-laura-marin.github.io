@@ -540,3 +540,17 @@ liberado puede ir a la muestra de auditoría.
 - **Calidad de datos.** Pedir a Sistemas que corrija `fecha_siniestro` de ago–oct 2025.
 - **Monitoreo.** Recalcular cada trimestre la calibración y el acierto del top-80, con
   los reclamos que vayan cerrando.
+
+## Respuesta al correo
+
+Revisé los datos y estos son los principales hallazgos y mi propuesta:
+
+* **Problema:** recibimos 626 reclamos al mes, pero solo podemos investigar 79.
+* **Resultado:** el modelo prioriza los casos que concentran el 86 % del monto de fraude
+  conocido, con la misma capacidad actual.
+* **Enfoque:** recomiendo un modelo explicable antes que deep learning o grafos, dadas las
+  limitaciones de los datos.
+* **Plan:** validar el modelo al 6 de noviembre, presentar resultados al comité el 20 de
+  noviembre y proponer un piloto en diciembre.
+* **IA:** sugiero usarla para preparar expedientes y apoyar a los analistas, no para
+  rechazar reclamos automáticamente, por los riesgos legales y operativos.
