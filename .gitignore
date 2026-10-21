@@ -25,3 +25,6 @@ proyectos/gasto-tarjetas/data/
 
 # Caché local de descargas de la SEC (blog)
 blog/*/data/raw/
+
+# Datos del caso de fraude: solo para renderizar localmente, no se publican
+proyectos/fraude-reclamos/reclamos.csv

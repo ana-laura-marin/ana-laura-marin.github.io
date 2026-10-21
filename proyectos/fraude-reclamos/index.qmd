@@ -4,6 +4,8 @@ description: "Logit explicable para priorizar la cola de investigación de una a
 date: "2026-10-21"
 categories: [Riesgo, Python, Modelos de clasificación]
 image: thumbnail.svg
+resources:
+  - presentacion_comite.pdf
 toc: true
 toc-depth: 2
 execute:
@@ -16,7 +18,8 @@ execute:
 **Código.** Cada bloque se despliega con *Ver código*, y el botón **</> Código** de
 arriba muestra el documento completo.
 Repositorio: [Caso-Identificaci-n-de-Fraudes](https://github.com/ana-laura-marin/Caso-Identificaci-n-de-Fraudes) ·
-[Abrir en Codespace](https://expert-guide-wrwxwqv6669rc9pw5.github.dev/)
+[Abrir en Codespace](https://expert-guide-wrwxwqv6669rc9pw5.github.dev/) ·
+[Descargar la presentación para el comité (PDF)](presentacion_comite.pdf){download="presentacion_comite.pdf"}
 :::
 
 **El problema.** Una aseguradora paga reclamos de autos que no debería, y su Unidad
