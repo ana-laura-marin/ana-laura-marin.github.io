@@ -15,10 +15,7 @@ execute:
 ---
 
 ::: {.callout-tip appearance="simple"}
-**[Código](https://github.com/ana-laura-marin/Caso_Identificacion_Fraude).** Cada bloque se despliega con *Ver código*, y el botón **</> Código** de
-arriba muestra el documento completo.
-Repositorio: [Caso_Identificacion_Fraude](https://github.com/ana-laura-marin/Caso_Identificacion_Fraude) ·
-[Abrir en Codespace](https://expert-guide-wrwxwqv6669rc9pw5.github.dev/) ·
+**Código:** [Caso_Identificacion_Fraude](https://github.com/ana-laura-marin/Caso_Identificacion_Fraude) ·
 [Descargar la presentación para el comité (PDF)](presentacion_comite.pdf){download="presentacion_comite.pdf"}
 :::
 
