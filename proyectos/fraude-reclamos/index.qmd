@@ -15,9 +15,9 @@ execute:
 ---
 
 ::: {.callout-tip appearance="simple"}
-**Código.** Cada bloque se despliega con *Ver código*, y el botón **</> Código** de
+**[Código](https://github.com/ana-laura-marin/Caso_Identificacion_Fraude).** Cada bloque se despliega con *Ver código*, y el botón **</> Código** de
 arriba muestra el documento completo.
-Repositorio: [Caso-Identificaci-n-de-Fraudes](https://github.com/ana-laura-marin/Caso-Identificaci-n-de-Fraudes) ·
+Repositorio: [Caso_Identificacion_Fraude](https://github.com/ana-laura-marin/Caso_Identificacion_Fraude) ·
 [Abrir en Codespace](https://expert-guide-wrwxwqv6669rc9pw5.github.dev/) ·
 [Descargar la presentación para el comité (PDF)](presentacion_comite.pdf){download="presentacion_comite.pdf"}
 :::
@@ -550,7 +550,7 @@ Revisé los datos y estos son los principales hallazgos y mi propuesta:
   conocido, con la misma capacidad actual.
 * **Enfoque:** recomiendo un modelo explicable antes que deep learning o grafos, dadas las
   limitaciones de los datos.
-* **Plan:** validar el modelo al 6 de noviembre, presentar resultados al comité el 20 de
-  noviembre y proponer un piloto en diciembre.
+* **Plan:** validar el modelo al 6 de noviembre, enviar los resultados a Rodrigo el 20 de
+  noviembre y presentarlos al comité la primera semana de diciembre, con la propuesta de piloto.
 * **IA:** sugiero usarla para preparar expedientes y apoyar a los analistas, no para
   rechazar reclamos automáticamente, por los riesgos legales y operativos.
